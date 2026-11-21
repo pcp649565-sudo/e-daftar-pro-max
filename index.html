@@ -291,11 +291,17 @@
 
           <div class="field">
             <label for="roleInput">Нақш (Role)</label>
-            <select id="roleInput">
+            <select id="roleInput" onchange="toggleParentChildCodeField()">
               <option value="student">Хонанда / Волидайн (Student/Parent)</option>
               <option value="teacher">Муаллим (Teacher)</option>
               <option value="admin">Админ (Admin)</option>
             </select>
+          </div>
+
+          <div id="regChildCodeField" class="field">
+            <label for="childCodeInput">Рамз / ID талаба (барои волидайн/хонанда)</label>
+            <input id="childCodeInput" type="text" placeholder="Масалан: ST-2010" />
+            <p class="muted" style="margin-top:4px;">Волидайн танҳо баҳои талабаро бо ин рамз мебинанд.</p>
           </div>
 
           <div class="field">
@@ -359,10 +365,23 @@
         <button type="button" class="btn-outline" data-tab="chat" onclick="switchSection('chat', this)">Чат</button>
       </div>
 
+      <!-- ПАНЕЛИ ҲИМОЯИ ВОЛИДАЙН / ХОНАНДА -->
+      <div id="parentBindPanel" class="card hidden">
+        <h3>Ҳимоя ва пайвастшавӣ ба талаба (Волидайн / Хонанда)</h3>
+        <p class="muted" style="margin-bottom:10px;">
+          Барои дидани баҳо ва давомоти танҳо талабаи худ, рамзи хонандаро (ки муаллим додааст, масалан <code>ST-2010</code>) ворид ва ҳифз кунед.
+        </p>
+        <form onsubmit="handleBindStudentCode(event)" style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input id="bindCodeInput" type="text" required placeholder="Рамз / ID талаба (масалан: ST-2010)" style="flex:1; min-width:220px;" />
+          <button type="submit" class="btn-green">Тасдиқ ва ҳифз</button>
+        </form>
+        <p id="boundStudentInfo" class="muted" style="margin-top:8px;"></p>
+      </div>
+
       <!-- 1. ХОНАНДАГОН -->
       <div id="sec-students" class="card">
         <div class="item-top" style="margin-bottom:12px;">
-          <h2 style="margin:0;">Рӯйхати хонандагон</h2>
+          <h2 id="studentsTitle" style="margin:0;">Рӯйхати хонандагон</h2>
           <span id="studentsCountBadge" class="badge">0 хонанда</span>
         </div>
 
@@ -407,7 +426,7 @@
               </div>
 
               <div class="field">
-                <label for="stCode">Рамз / ID хонанда (ихтиёрӣ)</label>
+                <label for="stCode">Рамз / ID хонанда (барои волидайн)</label>
                 <input id="stCode" type="text" placeholder="Масалан: ST-2010" />
               </div>
             </div>
@@ -420,7 +439,7 @@
 
       <!-- 2. БАҲО (1-10) ВА ДАВОМОТ -->
       <div id="sec-grades" class="card hidden">
-        <h2>Баҳогузорӣ (1–10) ва Давомот</h2>
+        <h2 id="gradesTitle">Баҳогузорӣ (1–10) ва Давомот</h2>
 
         <div id="gradeFormPanel" class="item hidden" style="margin-bottom:14px;">
           <h3>Гузоштани баҳо ва қайди давомот</h3>
@@ -519,16 +538,15 @@
   </div>
 
   <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -540,6 +558,10 @@ const firebaseConfig = {
         .replace(/[.#$\[\]\/]/g, "_")
         .replace(/\s+/g, "_");
       return val || fallback;
+    }
+
+    function normalizeCode(raw) {
+      return String(raw ?? "").trim().toUpperCase();
     }
 
     function escapeHtml(str) {
@@ -571,6 +593,11 @@ const firebaseConfig = {
       if (!isCustom) input.value = "";
     }
 
+    function toggleParentChildCodeField() {
+      const role = document.getElementById("roleInput").value;
+      document.getElementById("regChildCodeField").classList.toggle("hidden", role !== "student");
+    }
+
     function resolveSelectOrCustom(selectId, customInputId, fallback = "") {
       const selVal = document.getElementById(selectId).value;
       if (selVal === "__custom__") {
@@ -581,12 +608,27 @@ const firebaseConfig = {
 
     let authMode = "login";
     let currentUser = null;
-    let currentProfile = { fullName: "Корбар", role: "student", school: "" };
+    let currentProfile = { fullName: "Корбар", role: "student", school: "", boundStudentCode: "" };
     let studentsCache = {};
+    let gradesCache = {};
 
     function canManageSchool() {
       const role = currentProfile.role || "student";
       return role === "teacher" || role === "admin";
+    }
+
+    function getBoundStudentCode() {
+      return normalizeCode(currentProfile.boundStudentCode || "");
+    }
+
+    function isStudentAllowedForCurrentUser(studentKey, st = {}) {
+      if (canManageSchool()) return true;
+      const boundCode = getBoundStudentCode();
+      if (!boundCode) return false;
+
+      const stCode = normalizeCode(st.studentCode || "");
+      const stKeyNorm = normalizeCode(studentKey);
+      return stCode === boundCode || stKeyNorm === boundCode;
     }
 
     function switchAuthMode(mode) {
@@ -596,6 +638,7 @@ const firebaseConfig = {
       document.getElementById("tabRegister").classList.toggle("active", isReg);
       document.getElementById("registerFields").classList.toggle("hidden", !isReg);
       document.getElementById("authSubmitBtn").textContent = isReg ? "Бақайдгирӣ" : "Ворид шудан";
+      toggleParentChildCodeField();
       hideBanner();
     }
 
@@ -611,9 +654,17 @@ const firebaseConfig = {
           const fullName = document.getElementById("fullNameInput").value.trim();
           const role = document.getElementById("roleInput").value;
           const school = resolveSelectOrCustom("schoolSelect", "schoolCustomInput", "Мактаб");
+          const boundStudentCode = role === "student"
+            ? normalizeCode(document.getElementById("childCodeInput").value)
+            : "";
 
           if (!fullName) {
             showBanner("Лутфан ному насаби пурраро ворид кунед.");
+            return;
+          }
+
+          if (role === "student" && !boundStudentCode) {
+            showBanner("Барои волидайн / хонанда ворид кардани Рамз / ID талаба ҳатмист.");
             return;
           }
 
@@ -625,6 +676,7 @@ const firebaseConfig = {
             fullName,
             role,
             school,
+            boundStudentCode,
             email,
             createdAt: Date.now()
           });
@@ -640,6 +692,59 @@ const firebaseConfig = {
       } catch (err) {
         showBanner("Хатогӣ: " + (err.message || err));
       }
+    }
+
+    async function handleBindStudentCode(e) {
+      e.preventDefault();
+      hideBanner();
+
+      if (!currentUser || canManageSchool()) return;
+
+      const code = normalizeCode(document.getElementById("bindCodeInput").value);
+      if (!code) {
+        showBanner("Рамз / ID талабаро ворид кунед.");
+        return;
+      }
+
+      const uid = safeKey(currentUser.uid, "user");
+      try {
+        await db.ref(`users/${uid}/boundStudentCode`).set(code);
+        currentProfile.boundStudentCode = code;
+        updateParentPrivacyUi();
+        renderStudents(studentsCache);
+        renderGrades(gradesCache);
+        showBanner(`Рамзи талаба (${code}) тасдиқ шуд. Танҳо маълумоти ҳамон талаба намоиш дода мешавад.`, true);
+      } catch (err) {
+        showBanner("Хато ҳангоми ҳифзи рамз: " + (err.message || err));
+      }
+    }
+
+    function updateParentPrivacyUi() {
+      const isParentOrStudent = !canManageSchool();
+      const panel = document.getElementById("parentBindPanel");
+      panel.classList.toggle("hidden", !isParentOrStudent);
+
+      document.getElementById("studentsTitle").textContent = isParentOrStudent
+        ? "Маълумоти талабаи шумо"
+        : "Рӯйхати хонандагон";
+
+      document.getElementById("gradesTitle").textContent = isParentOrStudent
+        ? "Баҳо (1–10) ва Давомоти талабаи шумо"
+        : "Баҳогузорӣ (1–10) ва Давомот";
+
+      const code = getBoundStudentCode();
+      const bindInput = document.getElementById("bindCodeInput");
+      if (bindInput && code) bindInput.value = code;
+
+      const matched = Object.values(studentsCache).find(
+        (st) => normalizeCode(st.studentCode) === code
+      );
+
+      document.getElementById("boundStudentInfo").textContent = code
+        ? (matched
+            ? `Пайвастшуда: ${matched.fullName} (${matched.className || "Синф"}) • Рамз: ${code}`
+            : `Рамзи фаъол: ${code} (агар талаба ҳоло дар рӯйхат нест, ба муаллим хабар диҳед)`)
+        : "Огоҳӣ: Рамзи талаба ҳанӯз ворид нашудааст — баҳои дигар хонандагон баста аст.";
     }
 
     async function handleLogout() {
@@ -661,9 +766,9 @@ const firebaseConfig = {
         const snap = await db.ref(`users/${uid}`).get();
         currentProfile = snap.exists()
           ? snap.val()
-          : { fullName: user.email || "Корбар", role: "student", school: "" };
+          : { fullName: user.email || "Корбар", role: "student", school: "", boundStudentCode: "" };
       } catch (_) {
-        currentProfile = { fullName: user.email || "Корбар", role: "student", school: "" };
+        currentProfile = { fullName: user.email || "Корбар", role: "student", school: "", boundStudentCode: "" };
       }
 
       document.getElementById("authSection").classList.add("hidden");
@@ -682,6 +787,7 @@ const firebaseConfig = {
       document.getElementById("gradeFormPanel").classList.toggle("hidden", !canManage);
       document.getElementById("announcementPanel").classList.toggle("hidden", !canManage);
 
+      updateParentPrivacyUi();
       startRealtimeListeners();
     });
 
@@ -709,7 +815,8 @@ const firebaseConfig = {
         currentProfile.school || "Мактаб"
       );
       const className = document.getElementById("stClass").value.trim() || "Синф";
-      const rawCode = document.getElementById("stCode").value.trim();
+      const rawCode = normalizeCode(document.getElementById("stCode").value);
+      const finalCode = rawCode || `ST-${Date.now().toString().slice(-5)}`;
 
       if (!fullName) {
         showBanner("Ному насаби хонандаро нависед.");
@@ -718,7 +825,7 @@ const firebaseConfig = {
 
       const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       const keyPartSchool = safeKey(school, "school");
-      const keyPartCode = safeKey(rawCode || fullName, "st");
+      const keyPartCode = safeKey(finalCode, "st");
       const studentKey = safeKey(`${keyPartSchool}_${keyPartCode}_${uniqueSuffix}`, `st_${uniqueSuffix}`);
 
       try {
@@ -727,7 +834,7 @@ const firebaseConfig = {
           fullName,
           school,
           className,
-          studentCode: rawCode || `ST-${Date.now().toString().slice(-5)}`,
+          studentCode: finalCode,
           addedBy: currentProfile.fullName || currentUser.email,
           createdAt: Date.now()
         });
@@ -737,7 +844,7 @@ const firebaseConfig = {
         document.getElementById("stCode").value = "";
         document.getElementById("stName").focus();
 
-        showBanner(`Хонанда "${fullName}" илова шуд! Метавонед боз илова кунед.`, true);
+        showBanner(`Хонанда "${fullName}" (Рамз: ${finalCode}) илова шуд!`, true);
       } catch (err) {
         showBanner("Хато ҳангоми сабти хонанда: " + (err.message || err));
       }
@@ -787,6 +894,7 @@ const firebaseConfig = {
       try {
         await db.ref(`grades/${safeKeyId}`).push({
           studentKey: safeKeyId,
+          studentCode: normalizeCode(st.studentCode || ""),
           studentName: st.fullName || safeKeyId,
           subject,
           score,
@@ -821,6 +929,11 @@ const firebaseConfig = {
     async function handleAddAnnouncement(e) {
       e.preventDefault();
       hideBanner();
+
+      if (!canManageSchool()) {
+        showBanner("Танҳо муаллим ё админ метавонад эълон нашр кунад.");
+        return;
+      }
 
       const title = document.getElementById("annTitle").value.trim();
       const body = document.getElementById("annBody").value.trim();
@@ -869,12 +982,15 @@ const firebaseConfig = {
 
       db.ref("students").on("value", (snap) => {
         studentsCache = snap.val() || {};
+        updateParentPrivacyUi();
         renderStudents(studentsCache);
         renderStudentSelect(studentsCache);
+        renderGrades(gradesCache);
       });
 
       db.ref("grades").on("value", (snap) => {
-        renderGrades(snap.val() || {});
+        gradesCache = snap.val() || {};
+        renderGrades(gradesCache);
       });
 
       db.ref("announcements").on("value", (snap) => {
@@ -888,11 +1004,16 @@ const firebaseConfig = {
 
     function renderStudents(data) {
       const container = document.getElementById("studentsList");
-      const entries = Object.entries(data);
+      const entries = Object.entries(data || {}).filter(([key, st]) =>
+        isStudentAllowedForCurrentUser(key, st || {})
+      );
+
       document.getElementById("studentsCountBadge").textContent = `${entries.length} хонанда`;
 
       if (!entries.length) {
-        container.innerHTML = `<p class="muted">Ҳоло хонанда сабт нашудааст.</p>`;
+        container.innerHTML = canManageSchool()
+          ? `<p class="muted">Ҳоло хонанда сабт нашудааст.</p>`
+          : `<p class="muted">Барои дидани маълумоти талаба, рамзи дурусти хонандаро дар боло ворид кунед.</p>`;
         return;
       }
 
@@ -913,7 +1034,7 @@ const firebaseConfig = {
 
     function renderStudentSelect(data) {
       const select = document.getElementById("grStudentSelect");
-      const entries = Object.entries(data);
+      const entries = Object.entries(data || {});
       if (!entries.length) {
         select.innerHTML = `<option value="">Аввал хонанда илова кунед</option>`;
         return;
@@ -927,14 +1048,26 @@ const firebaseConfig = {
       const container = document.getElementById("gradesList");
       const rows = [];
 
-      Object.entries(data).forEach(([studentKey, studentGrades]) => {
+      Object.entries(data || {}).forEach(([studentKey, studentGrades]) => {
         if (studentGrades && typeof studentGrades === "object") {
           Object.entries(studentGrades).forEach(([gradeId, item]) => {
-            rows.push({
-              ...item,
-              studentKey: item.studentKey || studentKey,
-              gradeId
-            });
+            const stObj = studentsCache[studentKey] || {};
+            const recordCode = normalizeCode(item.studentCode || stObj.studentCode || "");
+            const allowed = canManageSchool() || (
+              getBoundStudentCode() !== "" && (
+                recordCode === getBoundStudentCode() ||
+                normalizeCode(studentKey) === getBoundStudentCode() ||
+                isStudentAllowedForCurrentUser(studentKey, stObj)
+              )
+            );
+
+            if (allowed) {
+              rows.push({
+                ...item,
+                studentKey: item.studentKey || studentKey,
+                gradeId
+              });
+            }
           });
         }
       });
@@ -942,7 +1075,9 @@ const firebaseConfig = {
       rows.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
       if (!rows.length) {
-        container.innerHTML = `<p class="muted">Ҳоло баҳо ё давомот сабт нашудааст.</p>`;
+        container.innerHTML = canManageSchool()
+          ? `<p class="muted">Ҳоло баҳо ё давомот сабт нашудааст.</p>`
+          : `<p class="muted">Барои талабаи шумо ҳоло баҳо сабт нашудааст ё рамзи хонанда ворид нашудааст.</p>`;
         return;
       }
 
@@ -966,7 +1101,7 @@ const firebaseConfig = {
 
     function renderAnnouncements(data) {
       const container = document.getElementById("announcementsList");
-      const list = Object.values(data).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      const list = Object.values(data || {}).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       if (!list.length) {
         container.innerHTML = `<p class="muted">Ҳоло эълон нест.</p>`;
         return;
@@ -986,7 +1121,7 @@ const firebaseConfig = {
 
     function renderChat(data) {
       const box = document.getElementById("chatBox");
-      const list = Object.values(data).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      const list = Object.values(data || {}).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       if (!list.length) {
         box.innerHTML = `<p class="muted">Ҳоло паём нест. Аввалин паёмро нависед!</p>`;
         return;
