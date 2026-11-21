@@ -299,8 +299,29 @@
           </div>
 
           <div class="field">
-            <label for="schoolInput">Муассиса / Мактаб</label>
-            <input id="schoolInput" type="text" placeholder="Масалан: МТМУ №2 ш. Душанбе" />
+            <label for="schoolSelect">Муассиса / Мактаб (Тоҷикистон)</label>
+            <select id="schoolSelect" onchange="toggleCustomInput('schoolSelect', 'regCustomSchoolField', 'schoolCustomInput')">
+              <option value="Маркази Таҳсилоти Иловагӣ">Маркази Таҳсилоти Иловагӣ</option>
+              <option value="МТМУ №1 ш. Душанбе">МТМУ №1 ш. Душанбе</option>
+              <option value="МТМУ №2 ш. Душанбе">МТМУ №2 ш. Душанбе</option>
+              <option value="МТМУ №5 ш. Душанбе">МТМУ №5 ш. Душанбе</option>
+              <option value="МТМУ №8 ш. Душанбе">МТМУ №8 ш. Душанбе</option>
+              <option value="МТМУ №10 ш. Душанбе">МТМУ №10 ш. Душанбе</option>
+              <option value="МТМУ №20 ш. Душанбе">МТМУ №20 ш. Душанбе</option>
+              <option value="МТМУ №1 ш. Хуҷанд (вилояти Суғд)">МТМУ №1 ш. Хуҷанд (вилояти Суғд)</option>
+              <option value="МТМУ №1 ш. Бохтар (вилояти Хатлон)">МТМУ №1 ш. Бохтар (вилояти Хатлон)</option>
+              <option value="МТМУ №1 ш. Кӯлоб (вилояти Хатлон)">МТМУ №1 ш. Кӯлоб (вилояти Хатлон)</option>
+              <option value="МТМУ №1 ш. Хоруғ (ВМКБ)">МТМУ №1 ш. Хоруғ (ВМКБ)</option>
+              <option value="МТМУ №1 ш. Ваҳдат (НТМ)">МТМУ №1 ш. Ваҳдат (НТМ)</option>
+              <option value="МТМУ №1 ш. Ҳисор (НТМ)">МТМУ №1 ш. Ҳисор (НТМ)</option>
+              <option value="МТМУ №1 ш. Турсунзода (НТМ)">МТМУ №1 ш. Турсунзода (НТМ)</option>
+              <option value="__custom__">Муассисаи дигар (дастӣ нависед)</option>
+            </select>
+          </div>
+
+          <div id="regCustomSchoolField" class="field hidden">
+            <label for="schoolCustomInput">Номи муассиса / мактаб</label>
+            <input id="schoolCustomInput" type="text" placeholder="Номи муассиса ё мактабро нависед..." />
           </div>
         </div>
 
@@ -353,14 +374,38 @@
                 <label for="stName">Ному насаби хонанда</label>
                 <input id="stName" type="text" required placeholder="Ному насаб" />
               </div>
+
               <div class="field">
-                <label for="stSchool">Мактаб / Муассиса</label>
-                <input id="stSchool" type="text" placeholder="Масалан: МТМУ №2 ш. Душанбе" />
+                <label for="stSchoolSelect">Мактаб / Муассиса (Тоҷикистон)</label>
+                <select id="stSchoolSelect" onchange="toggleCustomInput('stSchoolSelect', 'stCustomSchoolField', 'stSchoolCustom')">
+                  <option value="Маркази Таҳсилоти Иловагӣ">Маркази Таҳсилоти Иловагӣ</option>
+                  <option value="МТМУ №1 ш. Душанбе">МТМУ №1 ш. Душанбе</option>
+                  <option value="МТМУ №2 ш. Душанбе">МТМУ №2 ш. Душанбе</option>
+                  <option value="МТМУ №5 ш. Душанбе">МТМУ №5 ш. Душанбе</option>
+                  <option value="МТМУ №8 ш. Душанбе">МТМУ №8 ш. Душанбе</option>
+                  <option value="МТМУ №10 ш. Душанбе">МТМУ №10 ш. Душанбе</option>
+                  <option value="МТМУ №20 ш. Душанбе">МТМУ №20 ш. Душанбе</option>
+                  <option value="МТМУ №1 ш. Хуҷанд (вилояти Суғд)">МТМУ №1 ш. Хуҷанд (вилояти Суғд)</option>
+                  <option value="МТМУ №1 ш. Бохтар (вилояти Хатлон)">МТМУ №1 ш. Бохтар (вилояти Хатлон)</option>
+                  <option value="МТМУ №1 ш. Кӯлоб (вилояти Хатлон)">МТМУ №1 ш. Кӯлоб (вилояти Хатлон)</option>
+                  <option value="МТМУ №1 ш. Хоруғ (ВМКБ)">МТМУ №1 ш. Хоруғ (ВМКБ)</option>
+                  <option value="МТМУ №1 ш. Ваҳдат (НТМ)">МТМУ №1 ш. Ваҳдат (НТМ)</option>
+                  <option value="МТМУ №1 ш. Ҳисор (НТМ)">МТМУ №1 ш. Ҳисор (НТМ)</option>
+                  <option value="МТМУ №1 ш. Турсунзода (НТМ)">МТМУ №1 ш. Турсунзода (НТМ)</option>
+                  <option value="__custom__">Муассисаи дигар (дастӣ нависед)</option>
+                </select>
               </div>
+
+              <div id="stCustomSchoolField" class="field hidden">
+                <label for="stSchoolCustom">Номи мактаб / муассисаи дигар</label>
+                <input id="stSchoolCustom" type="text" placeholder="Номи муассисаро нависед..." />
+              </div>
+
               <div class="field">
                 <label for="stClass">Синф</label>
                 <input id="stClass" type="text" placeholder="Масалан: 9-А" />
               </div>
+
               <div class="field">
                 <label for="stCode">Рамз / ID хонанда (ихтиёрӣ)</label>
                 <input id="stCode" type="text" placeholder="Масалан: ST-2010" />
@@ -388,7 +433,7 @@
 
               <div class="field">
                 <label for="grSubjectSelect">Фан (Тоҷикистон)</label>
-                <select id="grSubjectSelect" required onchange="toggleCustomSubjectInput()">
+                <select id="grSubjectSelect" required onchange="toggleCustomInput('grSubjectSelect', 'customSubjectField', 'grSubjectCustom')">
                   <option value="Забони тоҷикӣ">Забони тоҷикӣ</option>
                   <option value="Адабиёти тоҷик">Адабиёти тоҷик</option>
                   <option value="Забони русӣ">Забони русӣ</option>
@@ -474,16 +519,15 @@
   </div>
 
   <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -516,14 +560,22 @@ const firebaseConfig = {
       document.getElementById("globalAlert").classList.add("hidden");
     }
 
-    function toggleCustomSubjectInput() {
-      const sel = document.getElementById("grSubjectSelect");
-      const customField = document.getElementById("customSubjectField");
-      const customInput = document.getElementById("grSubjectCustom");
+    function toggleCustomInput(selectId, fieldId, inputId) {
+      const sel = document.getElementById(selectId);
+      const field = document.getElementById(fieldId);
+      const input = document.getElementById(inputId);
       const isCustom = sel.value === "__custom__";
-      customField.classList.toggle("hidden", !isCustom);
-      customInput.required = isCustom;
-      if (!isCustom) customInput.value = "";
+      field.classList.toggle("hidden", !isCustom);
+      input.required = isCustom;
+      if (!isCustom) input.value = "";
+    }
+
+    function resolveSelectOrCustom(selectId, customInputId, fallback = "") {
+      const selVal = document.getElementById(selectId).value;
+      if (selVal === "__custom__") {
+        return document.getElementById(customInputId).value.trim() || fallback;
+      }
+      return selVal || fallback;
     }
 
     let authMode = "login";
@@ -557,7 +609,7 @@ const firebaseConfig = {
         if (authMode === "register") {
           const fullName = document.getElementById("fullNameInput").value.trim();
           const role = document.getElementById("roleInput").value;
-          const school = document.getElementById("schoolInput").value.trim();
+          const school = resolveSelectOrCustom("schoolSelect", "schoolCustomInput", "Мактаб");
 
           if (!fullName) {
             showBanner("Лутфан ному насаби пурраро ворид кунед.");
@@ -650,7 +702,11 @@ const firebaseConfig = {
       }
 
       const fullName = document.getElementById("stName").value.trim();
-      const school = document.getElementById("stSchool").value.trim() || currentProfile.school || "Мактаб";
+      const school = resolveSelectOrCustom(
+        "stSchoolSelect",
+        "stSchoolCustom",
+        currentProfile.school || "Мактаб"
+      );
       const className = document.getElementById("stClass").value.trim() || "Синф";
       const rawCode = document.getElementById("stCode").value.trim();
 
@@ -707,10 +763,7 @@ const firebaseConfig = {
       }
 
       const studentKey = document.getElementById("grStudentSelect").value;
-      const selectedSubject = document.getElementById("grSubjectSelect").value;
-      const subject = selectedSubject === "__custom__"
-        ? document.getElementById("grSubjectCustom").value.trim()
-        : selectedSubject;
+      const subject = resolveSelectOrCustom("grSubjectSelect", "grSubjectCustom", "");
       const score = Number(document.getElementById("grScore").value);
       const attendance = document.getElementById("grAttendance").value;
 
@@ -742,7 +795,7 @@ const firebaseConfig = {
         });
 
         document.getElementById("grScore").value = "";
-        if (selectedSubject === "__custom__") {
+        if (document.getElementById("grSubjectSelect").value === "__custom__") {
           document.getElementById("grSubjectCustom").value = "";
         }
         showBanner("Баҳо ва давомот сабт шуд!", true);
