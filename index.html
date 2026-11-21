@@ -12,17 +12,16 @@
     import { getDatabase, ref, set, push, onValue, get, child, remove, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     // КОНФИГУРАТСИЯИ FIREBASE (Барои кори пурраи онлайн калидҳои лоиҳаи худро инҷо гузоред)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBzXu7p_6zQwmdH1KrxVTgj6_O3RMzSMcw",
-      authDomain: "edaftar-pro-max.firebiseapp.com",
-      databaseURL: "https://edaftar-pro-max-default-rtdb.firebiseio.com",
-      projectId: "edaftar-pro-max",
-      storageBucket: "edaftar-pro-max.firebisestorage.app",
-      messagingSenderId: "647995267390",
-      appId: "1:647995267390:web:ce8431a4cf77c5c3ceb7af",
-      measurementId: "G-C4JSV52YEY"
-    };
-
+  const firebaseConfig = {
+  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
+  authDomain: "edaftar-pro-max.firebaseapp.com",
+  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+  projectId: "edaftar-pro-max",
+  storageBucket: "edaftar-pro-max.firebasestorage.app",
+  messagingSenderId: "647994267390",
+  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
+  measurementId: "G-C4JSV52YEY"
+};
     window.isDemoFirebase = firebaseConfig.apiKey.includes("DemoKey");
 
     if (!window.isDemoFirebase) {
