@@ -1,1274 +1,862 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>e-Дафтар Pro Max</title>
 
-  <!-- Firebase SDK Modules -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, push, onValue, get, child, remove, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // КОНФИГУРАТСИЯИ FIREBASE (Барои кори пурраи онлайн калидҳои лоиҳаи худро инҷо гузоред)
-  const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
-    window.isDemoFirebase = firebaseConfig.apiKey.includes("DemoKey");
-
-    if (!window.isDemoFirebase) {
-      const app = initializeApp(firebaseConfig);
-      window.fbAuth = getAuth(app);
-      window.fbDb = getDatabase(app);
-      window.fbMethods = {
-        createUserWithEmailAndPassword,
-        signInWithEmailAndPassword,
-        onAuthStateChanged,
-        signOut,
-        sendEmailVerification,
-        ref, set, push, onValue, get, child, remove, off
-      };
-    }
-  </script>
+  <!-- Firebase Compat SDK v10 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <style>
     :root {
-      --bg: #050706;
-      --card: #0d1210;
-      --card-2: #141b18;
-      --green: #10b981;
-      --green-bright: #00e676;
-      --red: #ef4444;
-      --red-bright: #ff3b30;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border-green: rgba(0, 230, 118, 0.35);
-      --border-red: rgba(255, 59, 48, 0.38);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --radius: 16px;
+      --bg-main: #090d0b;
+      --bg-card: #101814;
+      --bg-input: #16221c;
+      --border: #1f3329;
+      --text-main: #eef5f0;
+      --text-muted: #8fa698;
+      --green: #16a34a;
+      --green-bright: #22c55e;
+      --green-soft: rgba(34, 197, 94, 0.14);
+      --red: #dc2626;
+      --red-bright: #ef4444;
+      --red-soft: rgba(239, 68, 68, 0.15);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      -webkit-tap-highlight-color: transparent;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      background-color: var(--bg);
-      background-image:
-        radial-gradient(circle at 12% 8%, rgba(0, 230, 118, 0.11) 0%, transparent 42%),
-        radial-gradient(circle at 88% 92%, rgba(255, 59, 48, 0.11) 0%, transparent 42%);
-      color: var(--text);
+      background: var(--bg-main);
+      color: var(--text-main);
       min-height: 100vh;
-      padding-bottom: 82px;
-    }
-
-    header {
-      background: rgba(5, 7, 6, 0.94);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 1.15rem;
-    }
-
-    .logo-badge {
-      background: rgba(0, 230, 118, 0.14);
-      border: 1px solid var(--border-green);
-      color: var(--green-bright);
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 800;
-    }
-
-    .user-profile-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .user-badge {
-      background: var(--card-2);
-      border: 1px solid var(--border-green);
-      color: var(--green-bright);
-      padding: 6px 11px;
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      max-width: 155px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .btn-logout {
-      background: rgba(255, 59, 48, 0.14);
-      color: #ff6b63;
-      border: 1px solid var(--border-red);
-      padding: 6px 11px;
-      border-radius: 10px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
+      line-height: 1.45;
     }
 
     .container {
-      max-width: 800px;
-      margin: 16px auto;
-      padding: 0 14px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px;
     }
 
-    .demo-banner {
-      background: rgba(255, 59, 48, 0.1);
-      border: 1px solid var(--border-red);
-      color: #fca5a5;
-      padding: 9px 12px;
-      border-radius: 12px;
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+
+    .brand h1 {
+      font-size: 1.35rem;
+      color: var(--green-bright);
+    }
+
+    .brand p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
       font-size: 0.78rem;
-      text-align: center;
-      margin-bottom: 14px;
+      font-weight: 600;
+      background: var(--green-soft);
+      color: var(--green-bright);
+      border: 1px solid rgba(34, 197, 94, 0.35);
     }
 
-    .auth-container {
-      background: var(--card);
-      border: 1px solid var(--border-green);
-      border-radius: var(--radius);
-      padding: 24px 20px;
-      max-width: 430px;
-      margin: 16px auto;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    .badge.red {
+      background: var(--red-soft);
+      color: var(--red-bright);
+      border-color: rgba(239, 68, 68, 0.35);
     }
 
-    .auth-header {
-      text-align: center;
-      margin-bottom: 18px;
+    h2 {
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+      color: var(--text-main);
     }
 
-    .auth-header h2 {
-      font-size: 1.4rem;
-      margin-bottom: 4px;
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--green-bright);
     }
 
-    .auth-header p {
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
-    .auth-tabs {
+    .tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background: #060807;
-      padding: 5px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-      border: 1px solid var(--border-subtle);
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
-    .auth-tab {
-      padding: 10px;
-      text-align: center;
-      border-radius: 9px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      cursor: pointer;
-      color: var(--muted);
-      border: 1px solid transparent;
-      transition: 0.2s;
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
-    .auth-tab.active-reg {
-      background: rgba(0, 230, 118, 0.16);
-      color: var(--green-bright);
-      border-color: var(--border-green);
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
     }
 
-    .auth-tab.active-login {
-      background: rgba(255, 59, 48, 0.16);
-      color: #ff7a72;
-      border-color: var(--border-red);
-    }
-
-    .form-group {
-      margin-bottom: 13px;
+    .field {
+      margin-bottom: 12px;
     }
 
     label {
       display: block;
-      font-size: 0.8rem;
-      color: var(--muted);
+      font-size: 0.85rem;
+      color: var(--text-muted);
       margin-bottom: 5px;
-      font-weight: 600;
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 11px 13px;
-      background: #070908;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 11px;
-      color: var(--text);
-      font-size: 0.92rem;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-size: 0.95rem;
       outline: none;
     }
 
     input:focus, select:focus, textarea:focus {
       border-color: var(--green-bright);
-      box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.14);
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: 0.15s ease;
     }
 
     .btn-green {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, var(--green-bright), var(--green));
-      color: #03150e;
-      border: none;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(0, 230, 118, 0.25);
+      background: var(--green);
+      color: #ffffff;
+    }
+
+    .btn-green:hover {
+      background: var(--green-bright);
+      color: #06110a;
     }
 
     .btn-red {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, var(--red-bright), #b91c1c);
+      background: var(--red);
       color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(255, 59, 48, 0.25);
     }
 
-    .dashboard-panel {
-      display: none;
+    .btn-red:hover {
+      background: var(--red-bright);
     }
 
-    .dashboard-panel.active {
-      display: block;
+    .btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border);
     }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 16px;
+    .btn-outline.active {
+      background: var(--green-soft);
+      border-color: var(--green-bright);
+      color: var(--green-bright);
     }
 
-    .card.green-frame {
-      border-color: var(--border-green);
+    .item {
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
     }
 
-    .card.red-frame {
-      border-color: var(--border-red);
-    }
-
-    .card-title {
-      font-size: 1.02rem;
-      font-weight: 800;
-      margin-bottom: 14px;
+    .item-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .tag-red {
-      color: #ff6b63;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    @media (max-width: 640px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-
-    .grade-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
       gap: 8px;
+      margin-bottom: 4px;
     }
 
-    .grade-btn {
-      background: #080b0a;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: var(--text);
-      padding: 10px 0;
-      border-radius: 10px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .grade-btn.active {
-      background: var(--green-bright);
-      color: #03150e;
-      border-color: var(--green-bright);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 10px 8px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-subtle);
-      font-size: 0.85rem;
-    }
-
-    th {
-      color: var(--muted);
-      font-size: 0.76rem;
-      text-transform: uppercase;
-    }
-
-    .status-present {
-      color: var(--green-bright);
-      background: rgba(0, 230, 118, 0.14);
-      border: 1px solid var(--border-green);
-      padding: 3px 8px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.76rem;
-    }
-
-    .status-absent {
-      color: #ff6b63;
-      background: rgba(255, 59, 48, 0.15);
-      border: 1px solid var(--border-red);
-      padding: 3px 8px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.76rem;
-    }
-
-    .grade-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      font-weight: 800;
-      font-size: 0.85rem;
-    }
-
-    .g-high {
-      background: rgba(0, 230, 118, 0.16);
-      color: var(--green-bright);
-      border: 1px solid var(--border-green);
-    }
-
-    .g-low {
-      background: rgba(255, 59, 48, 0.16);
-      color: #ff6b63;
-      border: 1px solid var(--border-red);
-    }
-
-    .btn-del {
-      background: rgba(255, 59, 48, 0.15);
-      color: #ff7a72;
-      border: 1px solid var(--border-red);
-      padding: 5px 9px;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
+    .muted {
+      color: var(--text-muted);
+      font-size: 0.84rem;
     }
 
     .chat-box {
-      height: 230px;
+      max-height: 280px;
       overflow-y: auto;
-      background: #070908;
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      border-radius: 10px;
+      padding: 10px;
       margin-bottom: 10px;
     }
 
     .msg {
-      max-width: 82%;
-      padding: 9px 12px;
-      border-radius: 13px;
-      font-size: 0.86rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #101a15;
+      border-left: 3px solid var(--green-bright);
+      margin-bottom: 8px;
     }
 
-    .msg.me {
-      align-self: flex-end;
-      background: rgba(0, 230, 118, 0.18);
-      border: 1px solid var(--border-green);
-      color: var(--text);
+    .hidden {
+      display: none !important;
     }
 
-    .msg.other {
-      align-self: flex-start;
-      background: rgba(255, 59, 48, 0.15);
-      border: 1px solid var(--border-red);
-      color: var(--text);
-    }
-
-    .msg-sender {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-bottom: 2px;
-      font-weight: 700;
-    }
-
-    .chat-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .announcement-box {
-      background: #080b0a;
-      border-left: 3px solid var(--red-bright);
-      border-top: 1px solid var(--border-subtle);
-      border-right: 1px solid var(--border-subtle);
-      border-bottom: 1px solid var(--border-subtle);
+    .status-banner {
+      padding: 10px 12px;
       border-radius: 10px;
-      padding: 11px;
-      margin-bottom: 9px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+      background: var(--red-soft);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fecaca;
     }
 
-    .gpa-badge {
-      background: rgba(0, 230, 118, 0.15);
-      border: 1px solid var(--border-green);
-      color: var(--green-bright);
-      padding: 4px 10px;
-      border-radius: 14px;
-      font-size: 0.82rem;
-      font-weight: 800;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(7, 10, 8, 0.96);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border-subtle);
-      display: none;
-      justify-content: space-around;
-      padding: 8px 6px 10px;
-      z-index: 200;
-    }
-
-    .bottom-nav.show {
-      display: flex;
-    }
-
-    .nav-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 0.74rem;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 5px 12px;
-      border-radius: 10px;
-    }
-
-    .nav-btn.active {
-      color: var(--green-bright);
-      background: rgba(0, 230, 118, 0.12);
+    .status-banner.ok {
+      background: var(--green-soft);
+      border-color: rgba(34, 197, 94, 0.4);
+      color: #bbf7d0;
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <div class="logo">
-      <span>🛡️ e-Дафтар</span>
-      <span class="logo-badge">PRO MAX</span>
-    </div>
-    <div class="user-profile-bar" id="user-bar" style="display: none;">
-      <span class="user-badge" id="user-display-name">Корбар</span>
-      <button class="btn-logout" onclick="signOutUser()">Баромад</button>
-    </div>
-  </header>
-
   <div class="container">
-    <div id="demo-banner" class="demo-banner" style="display: none;">
-      Ҳолати санҷишии маҳаллӣ фаъол аст. Барои пайвасти онлайн калидҳои Firebase-ро дар код иваз кунед.
-    </div>
+    <div id="globalAlert" class="status-banner hidden"></div>
 
-    <!-- ВОРИДШАВӢ ВА РЕГИСТРАТСИЯ -->
-    <div id="auth-section" class="auth-container">
-      <div class="auth-header">
-        <h2>e-Дафтар Pro Max</h2>
-        <p>Ворид шавед ё аккаунти нав созед</p>
+    <!-- САҲИФАИ ВОРИДШАВӢ ВА РЕГИСТРАТСИЯ -->
+    <div id="authSection" class="card" style="max-width: 480px; margin: 24px auto;">
+      <div style="text-align:center; margin-bottom:14px;">
+        <h1 style="color:var(--green-bright); font-size:1.6rem;">e-Дафтар Pro Max</h1>
+        <p class="muted">Ворид шавед ё аккаунти нав созед</p>
       </div>
 
-      <div class="auth-tabs">
-        <div class="auth-tab active-reg" id="tab-reg" onclick="switchAuthTab('reg')">Регистратсия</div>
-        <div class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Воридшавӣ</div>
+      <div class="tabs">
+        <button id="tabLogin" type="button" class="btn-outline active" onclick="switchAuthMode('login')">Воридшавӣ</button>
+        <button id="tabRegister" type="button" class="btn-outline" onclick="switchAuthMode('register')">Регистратсия</button>
       </div>
 
-      <form onsubmit="processAuth(event)">
-        <div class="form-group" id="group-fullname">
-          <label>Ному насаби пурра:</label>
-          <input type="text" id="reg-name" placeholder="Масалан: Камолдинов Анушервон">
+      <form id="authForm" onsubmit="handleAuthSubmit(event)">
+        <div id="registerFields" class="hidden">
+          <div class="field">
+            <label for="fullNameInput">Ному насаби пурра</label>
+            <input id="fullNameInput" type="text" placeholder="Масалан: Камолдинов Анушервон" />
+          </div>
+
+          <div class="field">
+            <label for="roleInput">Нақш (Role)</label>
+            <select id="roleInput">
+              <option value="student">Хонанда / Волидайн (Student/Parent)</option>
+              <option value="teacher">Муаллим (Teacher)</option>
+              <option value="admin">Админ (Admin)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="schoolInput">Муассиса / Мактаб</label>
+            <input id="schoolInput" type="text" placeholder="Масалан: МТМУ №2 ш. Душанбе" />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Почтаи электронӣ (Email):</label>
-          <input type="email" id="auth-email" required placeholder="name@gmail.com">
+        <div class="field">
+          <label for="emailInput">Почтаи электронӣ (Email)</label>
+          <input id="emailInput" type="email" required placeholder="name@gmail.com" />
         </div>
 
-        <div class="form-group">
-          <label>Парол:</label>
-          <input type="password" id="auth-password" required placeholder="Ҳадди ақал 6 аломат">
+        <div class="field">
+          <label for="passwordInput">Парол (ҳадди ақал 6 аломат)</label>
+          <input id="passwordInput" type="password" required minlength="6" placeholder="••••••••" />
         </div>
 
-        <div class="form-group" id="group-role">
-          <label>Нақш:</label>
-          <select id="reg-role" onchange="checkRoleInputs()">
-            <option value="teacher">Муаллим</option>
-            <option value="parent">Волидайн / Хонанда</option>
-            <option value="admin">Администратор</option>
-          </select>
-        </div>
-
-        <div class="form-group" id="group-school-id">
-          <label>Муассисаи таълимӣ (Мактаб):</label>
-          <input type="text" id="reg-school-id" list="taj-schools-database" placeholder="МТМУ №... ё номи муассиса">
-          <datalist id="taj-schools-database"></datalist>
-        </div>
-
-        <div class="form-group" id="group-teacher-class">
-          <label>Синфи роҳбарӣ:</label>
-          <select id="reg-teacher-class"></select>
-        </div>
-
-        <div class="form-group" id="group-student-code" style="display: none;">
-          <label>Коди хонанда (Student Code):</label>
-          <input type="text" id="reg-student-code" placeholder="Масалан: ST-101">
-        </div>
-
-        <div class="form-group" id="group-admin-key" style="display: none;">
-          <label style="color: #ff6b63;">Калиди махфии Администратор:</label>
-          <input type="password" id="reg-admin-key" placeholder="SECURITY_ADMIN_2026">
-        </div>
-
-        <button type="submit" class="btn-green" id="auth-submit-btn">Сохтани аккаунт</button>
+        <button id="authSubmitBtn" type="submit" class="btn-green" style="width:100%;">Ворид шудан</button>
       </form>
     </div>
 
-    <!-- КАБИНЕТИ АДМИНИСТРАТОР -->
-    <div id="panel-admin" class="dashboard-panel">
-      <div class="card red-frame">
-        <div class="card-title">
-          <span>Нашри Эълони Умумӣ</span>
-          <span class="tag-red">АДМИН</span>
+    <!-- КАБИНЕТИ АСОСӢ -->
+    <div id="appSection" class="hidden">
+      <div class="topbar">
+        <div class="brand">
+          <h1>e-Дафтар Pro Max</h1>
+          <p id="userMeta">Корбар: —</p>
         </div>
-        <form onsubmit="postSchoolAnnouncement(event)">
-          <div class="form-group">
-            <label>Матни эълон:</label>
-            <textarea id="adm-announcement-text" rows="2" required placeholder="Эълон барои хонандагон ва волидайн..."></textarea>
-          </div>
-          <button type="submit" class="btn-red">Нашр кардан</button>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span id="roleBadge" class="badge">ROLE</span>
+          <button type="button" class="btn-red" onclick="handleLogout()">Баромад</button>
+        </div>
+      </div>
+
+      <div class="nav-tabs">
+        <button type="button" class="btn-outline active" data-tab="students" onclick="switchSection('students', this)">Хонандагон</button>
+        <button type="button" class="btn-outline" data-tab="grades" onclick="switchSection('grades', this)">Баҳо (1–10) ва Давомот</button>
+        <button type="button" class="btn-outline" data-tab="announcements" onclick="switchSection('announcements', this)">Эълонҳо</button>
+        <button type="button" class="btn-outline" data-tab="chat" onclick="switchSection('chat', this)">Чат</button>
+      </div>
+
+      <!-- 1. ХОНАНДАГОН -->
+      <div id="sec-students" class="card">
+        <h2>Рӯйхати хонандагон</h2>
+
+        <div id="addStudentPanel" class="item hidden" style="margin-bottom:14px;">
+          <h3>Илова кардани хонандаи нав</h3>
+          <form id="addStudentForm" onsubmit="handleAddStudent(event)">
+            <div class="grid-2">
+              <div class="field">
+                <label for="stName">Ному насаби хонанда</label>
+                <input id="stName" type="text" required placeholder="Ному насаб" />
+              </div>
+              <div class="field">
+                <label for="stSchool">Мактаб / Муассиса</label>
+                <input id="stSchool" type="text" placeholder="Масалан: МТМУ №2 ш. Душанбе" />
+              </div>
+              <div class="field">
+                <label for="stClass">Синф</label>
+                <input id="stClass" type="text" placeholder="Масалан: 9-А" />
+              </div>
+              <div class="field">
+                <label for="stCode">Рамз / ID хонанда</label>
+                <input id="stCode" type="text" placeholder="Масалан: ST-2010" />
+              </div>
+            </div>
+            <button type="submit" class="btn-green">Сабт кардани хонанда</button>
+          </form>
+        </div>
+
+        <div id="studentsList"></div>
+      </div>
+
+      <!-- 2. БАҲО (1-10) ВА ДАВОМОТ -->
+      <div id="sec-grades" class="card hidden">
+        <h2>Баҳогузорӣ (1–10) ва Давомот</h2>
+
+        <div id="gradeFormPanel" class="item hidden" style="margin-bottom:14px;">
+          <h3>Гузоштани баҳо ва қайди давомот</h3>
+          <form id="gradeForm" onsubmit="handleSaveGrade(event)">
+            <div class="grid-2">
+              <div class="field">
+                <label for="grStudentSelect">Хонанда</label>
+                <select id="grStudentSelect" required></select>
+              </div>
+              <div class="field">
+                <label for="grSubject">Фан</label>
+                <input id="grSubject" type="text" required placeholder="Масалан: Математика" />
+              </div>
+              <div class="field">
+                <label for="grScore">Баҳо (аз 1 то 10)</label>
+                <input id="grScore" type="number" min="1" max="10" required placeholder="1 - 10" />
+              </div>
+              <div class="field">
+                <label for="grAttendance">Давомот</label>
+                <select id="grAttendance">
+                  <option value="Ҳозир">Ҳозир</option>
+                  <option value="Ғоиб">Ғоиб</option>
+                  <option value="Дер кард">Дер кард</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn-green">Сабти баҳо ва давомот</button>
+          </form>
+        </div>
+
+        <div id="gradesList"></div>
+      </div>
+
+      <!-- 3. ЭЪЛОНҲО -->
+      <div id="sec-announcements" class="card hidden">
+        <h2>Эълонҳои расмӣ</h2>
+
+        <div id="announcementPanel" class="item hidden" style="margin-bottom:14px;">
+          <h3>Навиштани эълони нав</h3>
+          <form id="announcementForm" onsubmit="handleAddAnnouncement(event)">
+            <div class="field">
+              <label for="annTitle">Сарлавҳа</label>
+              <input id="annTitle" type="text" required placeholder="Сарлавҳаи эълон" />
+            </div>
+            <div class="field">
+              <label for="annBody">Матни эълон</label>
+              <textarea id="annBody" rows="3" required placeholder="Матни муфассал..."></textarea>
+            </div>
+            <button type="submit" class="btn-green">Интишори эълон</button>
+          </form>
+        </div>
+
+        <div id="announcementsList"></div>
+      </div>
+
+      <!-- 4. ЧАТ -->
+      <div id="sec-chat" class="card hidden">
+        <h2>Чати умумӣ / мактабӣ</h2>
+        <div id="chatBox" class="chat-box"></div>
+        <form id="chatForm" onsubmit="handleSendMessage(event)" style="display:flex; gap:8px;">
+          <input id="chatInput" type="text" required placeholder="Паём нависед..." />
+          <button type="submit" class="btn-green">Фиристодан</button>
         </form>
-      </div>
-
-      <div class="card green-frame">
-        <div class="card-title">Рӯйхати Хонандагон</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Мактаб / Синф</th>
-              <th>Код</th>
-              <th>Ному Насаб</th>
-              <th>Амал</th>
-            </tr>
-          </thead>
-          <tbody id="adm-students-table"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- КАБИНЕТИ МУАЛЛИМ -->
-    <div id="panel-teacher" class="dashboard-panel">
-      <div id="sec-students" class="card green-frame">
-        <div class="card-title">
-          <span>Хонандагони Синфи Шумо</span>
-          <span class="tag-red" id="tch-class-label">Синф</span>
-        </div>
-        <form onsubmit="teacherCreateStudent(event)" style="margin-bottom: 14px;">
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Ному насаби хонанда:</label>
-              <input type="text" id="tch-add-st-name" required placeholder="Раҳимов Анушервон">
-            </div>
-            <div class="form-group">
-              <label>Коди хонанда:</label>
-              <input type="text" id="tch-add-st-code" required placeholder="ST-101">
-            </div>
-          </div>
-          <button type="submit" class="btn-green">+ Илова ба синф</button>
-        </form>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Код</th>
-              <th>Ному Насаб</th>
-              <th>Амал</th>
-            </tr>
-          </thead>
-          <tbody id="tch-students-table"></tbody>
-        </table>
-      </div>
-
-      <div id="sec-grades" class="card red-frame">
-        <div class="card-title">
-          <span>Гузоштани Баҳо (1–10) ва Давомот</span>
-          <span class="tag-red">ЖУРНАЛ</span>
-        </div>
-        <form onsubmit="teacherSubmitGrade(event)">
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Хонанда:</label>
-              <select id="tch-student-select" required onchange="onTeacherSelectStudentChange()"></select>
-            </div>
-            <div class="form-group">
-              <label>Фанни дарсӣ:</label>
-              <select id="tch-subject" required>
-                <option value="Алгебра">Алгебра</option>
-                <option value="Геометрия">Геометрия</option>
-                <option value="Информатика">Информатика</option>
-                <option value="Физика">Физика</option>
-                <option value="Химия">Химия</option>
-                <option value="Забони Тоҷикӣ">Забони Тоҷикӣ</option>
-                <option value="Адабиёти Тоҷик">Адабиёти Тоҷик</option>
-                <option value="Забони Русӣ">Забони Русӣ</option>
-                <option value="Забони Англисӣ">Забони Англисӣ</option>
-                <option value="Таърихи Халқи Тоҷик">Таърихи Халқи Тоҷик</option>
-                <option value="География">География</option>
-                <option value="Биология">Биология</option>
-                <option value="Тарбияи Ҷисмонӣ">Тарбияи Ҷисмонӣ</option>
-                <option value="Ҳуқуқ">Ҳуқуқ</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Баҳо (1–10):</label>
-            <input type="hidden" id="tch-grade" value="9">
-            <div class="grade-grid" id="grade-buttons"></div>
-          </div>
-
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Давомот:</label>
-              <select id="tch-status" required>
-                <option value="Ҳозир">Ҳозир</option>
-                <option value="Ғоиб">Ғоиб</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Шарҳ:</label>
-              <input type="text" id="tch-comment" placeholder="Эзоҳ барои волидайн...">
-            </div>
-          </div>
-
-          <button type="submit" class="btn-green">Сабти баҳо</button>
-        </form>
-      </div>
-
-      <div id="sec-chat" class="card green-frame">
-        <div class="card-title">Чат бо Волидайн</div>
-        <div class="chat-box" id="tch-chat-box"></div>
-        <div class="chat-row">
-          <input type="text" id="tch-chat-input" placeholder="Паём нависед..." onkeypress="if(event.key==='Enter') sendChatMessage('teacher')">
-          <button class="btn-green" style="width: 115px;" onclick="sendChatMessage('teacher')">Фиристодан</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- КАБИНЕТИ ВОЛИДАЙН / ХОНАНДА -->
-    <div id="panel-parent" class="dashboard-panel">
-      <div class="card green-frame">
-        <div class="card-title">
-          <span>Рӯзномаи Электронӣ</span>
-          <span class="gpa-badge" id="parent-gpa-display">Миёна: 0.0</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Сана</th>
-              <th>Фан</th>
-              <th>Баҳо</th>
-              <th>Ҳолат</th>
-              <th>Шарҳ</th>
-            </tr>
-          </thead>
-          <tbody id="prn-grades-table"></tbody>
-        </table>
-      </div>
-
-      <div class="card red-frame">
-        <div class="card-title">Эълонҳо</div>
-        <div id="announcements-box"></div>
-      </div>
-
-      <div class="card green-frame">
-        <div class="card-title">Чат бо Муаллим</div>
-        <div class="chat-box" id="prn-chat-box"></div>
-        <div class="chat-row">
-          <input type="text" id="prn-chat-input" placeholder="Савол ба муаллим..." onkeypress="if(event.key==='Enter') sendChatMessage('parent')">
-          <button class="btn-green" style="width: 115px;" onclick="sendChatMessage('parent')">Фиристодан</button>
-        </div>
       </div>
     </div>
   </div>
 
-  <nav class="bottom-nav" id="teacher-nav">
-    <button class="nav-btn" onclick="jumpTo('sec-students', this)">Хонандагон</button>
-    <button class="nav-btn active" onclick="jumpTo('sec-grades', this)">Журнал</button>
-    <button class="nav-btn" onclick="jumpTo('sec-chat', this)">Чат</button>
-  </nav>
-
   <script>
-    const schoolsList = [
-      "Маркази Таҳсилоти Иловагӣ", "Гимназияи №5 ба номи Султон Воҳидов",
-      "МТМУ №1 (ш. Душанбе)", "МТМУ №8 (ш. Душанбе)", "МТМУ №21 (ш. Душанбе)",
-      "Гимназияи №1 ба номи Ниёзӣ (Душанбе)", "Лицейи №1 (Душанбе)",
-      "МТМУ №1 (ш. Хуҷанд)", "МТМУ №1 (ш. Бохтар)", "МТМУ №1 (ш. Кӯлоб)"
-    ];
+    // =========================================================================
+    // 1. КОНФИГУРАТСИЯИ FIREBASE (Ба ҷои арзишҳои зерин config-и худро гузоред)
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    let authMode = 'reg';
-    let activeUser = null;
-    let selectedStudentCode = null;
-    let currentChatRef = null;
-    const ADMIN_SECRET_KEY = "SECURITY_ADMIN_2026";
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const dl = document.getElementById('taj-schools-database');
-      schoolsList.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        dl.appendChild(opt);
-      });
-
-      const clsSel = document.getElementById('reg-teacher-class');
-      ['А', 'Б', 'В', 'Г'].forEach(l => {
-        for (let i = 1; i <= 11; i++) {
-          const opt = document.createElement('option');
-          opt.value = `${i} «${l}» синф`;
-          opt.textContent = `${i} «${l}» синф`;
-          clsSel.appendChild(opt);
-        }
-      });
-
-      const gradeBox = document.getElementById('grade-buttons');
-      for (let g = 1; g <= 10; g++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'grade-btn' + (g === 9 ? ' active' : '');
-        btn.textContent = g;
-        btn.onclick = () => {
-          document.getElementById('tch-grade').value = g;
-          document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-        };
-        gradeBox.appendChild(btn);
-      }
-
-      switchAuthTab('reg');
-
-      if (window.isDemoFirebase) {
-        document.getElementById('demo-banner').style.display = 'block';
-        const saved = localStorage.getItem('edaftar_session_v2');
-        if (saved) {
-          activeUser = JSON.parse(saved);
-          showDashboard(activeUser);
-        }
-      }
-    });
-
-    function jumpTo(id, btn) {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // =========================================================================
+    // 2. ФУНКСИЯИ БЕХАТАРИ ТОЗАКУНИИ КАЛИДҲОИ FIREBASE
+    // Firebase дар path/key аломатҳои . $ # [ ] / -ро қабул намекунад
+    // =========================================================================
+    function safeKey(raw, fallback = "item") {
+      const val = String(raw ?? "")
+        .trim()
+        .replace(/[.#$\[\]\/]/g, "_")
+        .replace(/\s+/g, "_");
+      return val || fallback;
     }
 
-    function switchAuthTab(mode) {
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function showBanner(msg, isOk = false) {
+      const el = document.getElementById("globalAlert");
+      el.textContent = msg;
+      el.className = isOk ? "status-banner ok" : "status-banner";
+      el.classList.remove("hidden");
+    }
+
+    function hideBanner() {
+      document.getElementById("globalAlert").classList.add("hidden");
+    }
+
+    // =========================================================================
+    // 3. ВОРИДШАВӢ ВА РЕГИСТРАТСИЯ
+    // =========================================================================
+    let authMode = "login";
+    let currentUser = null;
+    let currentProfile = { fullName: "Корбар", role: "student", school: "" };
+    let studentsCache = {};
+
+    function switchAuthMode(mode) {
       authMode = mode;
-      const isReg = mode === 'reg';
-      document.getElementById('tab-reg').className = 'auth-tab' + (isReg ? ' active-reg' : '');
-      document.getElementById('tab-login').className = 'auth-tab' + (!isReg ? ' active-login' : '');
-
-      document.getElementById('group-fullname').style.display = isReg ? 'block' : 'none';
-      document.getElementById('group-role').style.display = isReg ? 'block' : 'none';
-
-      const btn = document.getElementById('auth-submit-btn');
-      btn.textContent = isReg ? 'Сохтани аккаунт' : 'Ворид шудан';
-      btn.className = isReg ? 'btn-green' : 'btn-red';
-
-      checkRoleInputs();
+      const isReg = mode === "register";
+      document.getElementById("tabLogin").classList.toggle("active", !isReg);
+      document.getElementById("tabRegister").classList.toggle("active", isReg);
+      document.getElementById("registerFields").classList.toggle("hidden", !isReg);
+      document.getElementById("authSubmitBtn").textContent = isReg ? "Бақайдгирӣ" : "Ворид шудан";
+      hideBanner();
     }
 
-    function checkRoleInputs() {
-      const role = document.getElementById('reg-role').value;
-      const isReg = authMode === 'reg';
-      document.getElementById('group-student-code').style.display = (isReg && role === 'parent') ? 'block' : 'none';
-      document.getElementById('group-teacher-class').style.display = (isReg && role === 'teacher') ? 'block' : 'none';
-      document.getElementById('group-school-id').style.display = (isReg && (role === 'teacher' || role === 'parent')) ? 'block' : 'none';
-      document.getElementById('group-admin-key').style.display = (isReg && role === 'admin') ? 'block' : 'none';
-    }
-
-    function getLocalDB() {
-      return JSON.parse(localStorage.getItem('edaftar_db_v2') || '{"users":{},"students":{},"grades":{},"announcements":[],"chats":{}}');
-    }
-
-    function saveLocalDB(db) {
-      localStorage.setItem('edaftar_db_v2', JSON.stringify(db));
-    }
-
-    async function processAuth(e) {
+    async function handleAuthSubmit(e) {
       e.preventDefault();
-      const email = document.getElementById('auth-email').value.trim().toLowerCase();
-      const pass = document.getElementById('auth-password').value;
+      hideBanner();
 
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        if (authMode === 'reg') {
-          const name = document.getElementById('reg-name').value.trim() || 'Корбар';
-          const role = document.getElementById('reg-role').value;
-          const schoolId = document.getElementById('reg-school-id').value.trim() || 'Муассисаи таълимӣ';
-          const teacherClass = document.getElementById('reg-teacher-class').value;
-          const stCode = document.getElementById('reg-student-code').value.trim();
-          const adminKey = document.getElementById('reg-admin-key').value;
-
-          if (role === 'admin' && adminKey !== ADMIN_SECRET_KEY) {
-            alert('Калиди махфии Администратор нодуруст аст!');
-            return;
-          }
-          if (db.users[email]) {
-            alert('Ин Email аллакай сабт шудааст. Ба «Воридшавӣ» гузаред.');
-            return;
-          }
-
-          db.users[email] = {
-            name, email, pass, role, schoolId,
-            displayClass: teacherClass,
-            teacherClass: role === 'teacher' ? `${schoolId}_${teacherClass}` : null,
-            studentCode: stCode ? `${schoolId}_${stCode}` : null
-          };
-          saveLocalDB(db);
-          alert('Аккаунт сохта шуд! Акнун ворид шавед.');
-          switchAuthTab('login');
-        } else {
-          const u = db.users[email];
-          if (!u || u.pass !== pass) {
-            alert('Email ё парол нодуруст аст!');
-            return;
-          }
-          activeUser = u;
-          localStorage.setItem('edaftar_session_v2', JSON.stringify(u));
-          showDashboard(u);
-        }
-        return;
-      }
+      const email = document.getElementById("emailInput").value.trim();
+      const password = document.getElementById("passwordInput").value;
 
       try {
-        if (authMode === 'reg') {
-          const name = document.getElementById('reg-name').value.trim();
-          const role = document.getElementById('reg-role').value;
-          const schoolId = document.getElementById('reg-school-id').value.trim() || 'Муассисаи таълимӣ';
-          const teacherClass = document.getElementById('reg-teacher-class').value;
-          const stCode = document.getElementById('reg-student-code').value.trim();
-          const adminKey = document.getElementById('reg-admin-key').value;
+        if (authMode === "register") {
+          const fullName = document.getElementById("fullNameInput").value.trim() || "Корбари нав";
+          const role = document.getElementById("roleInput").value;
+          const school = document.getElementById("schoolInput").value.trim();
 
-          if (role === 'admin' && adminKey !== ADMIN_SECRET_KEY) {
-            alert('Калиди махфии Администратор нодуруст аст!');
+          if (!document.getElementById("fullNameInput").value.trim()) {
+            showBanner("Лутфан ному насаби пурраро ворид кунед.");
             return;
           }
 
-          const res = await window.fbMethods.createUserWithEmailAndPassword(window.fbAuth, email, pass);
-          await window.fbMethods.sendEmailVerification(res.user);
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          const uid = safeKey(cred.user.uid, "user");
 
-          await window.fbMethods.set(window.fbMethods.ref(window.fbDb, 'users/' + res.user.uid), {
-            name, email, role, schoolId,
-            displayClass: teacherClass,
-            teacherClass: role === 'teacher' ? `${schoolId}_${teacherClass}` : null,
-            studentCode: stCode ? `${schoolId}_${stCode}` : null
+          await db.ref(`users/${uid}`).set({
+            uid: cred.user.uid,
+            fullName,
+            role,
+            school,
+            email,
+            createdAt: Date.now()
           });
 
-          alert('Линки тасдиқ ба Email фиристода шуд! Почтаро тасдиқ кунед ва ворид шавед.');
-          switchAuthTab('login');
+          try {
+            await cred.user.sendEmailVerification();
+          } catch (_) {}
+
+          showBanner("Аккаунт сохта шуд! Линки тасдиқ ба почтаи шумо фиристода шуд.", true);
         } else {
-          const res = await window.fbMethods.signInWithEmailAndPassword(window.fbAuth, email, pass);
-          if (!res.user.emailVerified) {
-            alert('Почтаи шумо ҳанӯз тасдиқ нашудааст!');
-            await window.fbMethods.signOut(window.fbAuth);
-          }
+          await auth.signInWithEmailAndPassword(email, password);
         }
       } catch (err) {
-        alert('Хатогӣ: ' + err.message);
+        showBanner("Хатогӣ: " + (err.message || err));
       }
     }
 
-    window.addEventListener('load', () => {
-      if (window.isDemoFirebase) return;
-      const t = setInterval(() => {
-        if (window.fbAuth) {
-          clearInterval(t);
-          window.fbMethods.onAuthStateChanged(window.fbAuth, async (user) => {
-            if (user && user.emailVerified) {
-              const snap = await window.fbMethods.get(window.fbMethods.child(window.fbMethods.ref(window.fbDb), `users/${user.uid}`));
-              if (snap.exists()) {
-                activeUser = snap.val();
-                showDashboard(activeUser);
-              }
-            } else {
-              resetAuth();
-            }
-          });
+    async function handleLogout() {
+      await auth.signOut();
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        currentUser = null;
+        document.getElementById("authSection").classList.remove("hidden");
+        document.getElementById("appSection").classList.add("hidden");
+        return;
+      }
+
+      currentUser = user;
+      const uid = safeKey(user.uid, "user");
+
+      try {
+        const snap = await db.ref(`users/${uid}`).get();
+        if (snap.exists()) {
+          currentProfile = snap.val();
+        } else {
+          currentProfile = {
+            fullName: user.email || "Корбар",
+            role: "student",
+            school: ""
+          };
         }
-      }, 150);
+      } catch (_) {
+        currentProfile = {
+          fullName: user.email || "Корбар",
+          role: "student",
+          school: ""
+        };
+      }
+
+      document.getElementById("authSection").classList.add("hidden");
+      document.getElementById("appSection").classList.remove("hidden");
+
+      const role = currentProfile.role || "student";
+      document.getElementById("userMeta").textContent =
+        `${currentProfile.fullName} (${user.email || ""})`;
+
+      const badge = document.getElementById("roleBadge");
+      badge.textContent = role.toUpperCase();
+      badge.className = role === "admin" ? "badge red" : "badge";
+
+      const canManage = role === "teacher" || role === "admin";
+      document.getElementById("addStudentPanel").classList.toggle("hidden", !canManage);
+      document.getElementById("gradeFormPanel").classList.toggle("hidden", !canManage);
+      document.getElementById("announcementPanel").classList.toggle("hidden", !canManage);
+
+      startRealtimeListeners();
     });
 
-    function showDashboard(user) {
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('user-bar').style.display = 'flex';
-      document.getElementById('user-display-name').textContent = user.name;
-      document.querySelectorAll('.dashboard-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('teacher-nav').classList.remove('show');
-
-      if (user.role === 'admin') {
-        document.getElementById('panel-admin').classList.add('active');
-        fetchAdminStudents();
-      } else if (user.role === 'teacher') {
-        document.getElementById('panel-teacher').classList.add('active');
-        document.getElementById('teacher-nav').classList.add('show');
-        document.getElementById('tch-class-label').textContent = user.displayClass || 'Синф';
-        fetchTeacherStudents(user.teacherClass);
-      } else {
-        document.getElementById('panel-parent').classList.add('active');
-        fetchParentGrades(user.studentCode);
-        fetchAnnouncements();
-        listenChat(user.studentCode, 'prn-chat-box');
+    // =========================================================================
+    // 4. НАВИГАТСИЯИ БАХШҲО
+    // =========================================================================
+    function switchSection(secName, btnEl) {
+      for (const name of ["students", "grades", "announcements", "chat"]) {
+        document.getElementById(`sec-${name}`).classList.toggle("hidden", name !== secName);
       }
+      document.querySelectorAll(".nav-tabs button").forEach((b) => b.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
     }
 
-    function resetAuth() {
-      document.getElementById('auth-section').style.display = 'block';
-      document.getElementById('user-bar').style.display = 'none';
-      document.getElementById('teacher-nav').classList.remove('show');
-      document.querySelectorAll('.dashboard-panel').forEach(p => p.classList.remove('active'));
-    }
-
-    async function teacherCreateStudent(e) {
+    // =========================================================================
+    // 5. ИЛОВА КАРДАНИ ХОНАНДА (БО SAFE KEY — БЕ ХАТОИ НУҚТА/АЛОМАТҲО)
+    // =========================================================================
+    async function handleAddStudent(e) {
       e.preventDefault();
-      const name = document.getElementById('tch-add-st-name').value.trim();
-      const rawCode = document.getElementById('tch-add-st-code').value.trim();
-      const fullCode = `${activeUser.schoolId}_${rawCode}`;
-      const st = {
-        name, rawCode, code: fullCode,
-        schoolId: activeUser.schoolId,
-        displayClass: activeUser.displayClass,
-        className: activeUser.teacherClass
-      };
+      hideBanner();
 
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        db.students[fullCode] = st;
-        saveLocalDB(db);
-      } else {
-        await window.fbMethods.set(window.fbMethods.ref(window.fbDb, 'students/' + fullCode), st);
-      }
+      const fullName = document.getElementById("stName").value.trim();
+      const school = document.getElementById("stSchool").value.trim() || currentProfile.school || "Мактаб";
+      const className = document.getElementById("stClass").value.trim() || "Синф";
+      const rawCode = document.getElementById("stCode").value.trim();
 
-      document.getElementById('tch-add-st-name').value = '';
-      document.getElementById('tch-add-st-code').value = '';
-      fetchTeacherStudents(activeUser.teacherClass);
-    }
-
-    async function deleteStudent(code) {
-      if (!confirm('Хонанда нест карда шавад?')) return;
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        delete db.students[code];
-        saveLocalDB(db);
-      } else {
-        await window.fbMethods.remove(window.fbMethods.ref(window.fbDb, 'students/' + code));
-      }
-      if (activeUser.role === 'admin') fetchAdminStudents();
-      else fetchTeacherStudents(activeUser.teacherClass);
-    }
-
-    function fetchAdminStudents() {
-      const tb = document.getElementById('adm-students-table');
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        tb.innerHTML = Object.values(db.students).map(s => `
-          <tr>
-            <td>${s.schoolId}<br><small style="color:var(--muted)">${s.displayClass || ''}</small></td>
-            <td>${s.rawCode || s.code}</td>
-            <td>${s.name}</td>
-            <td><button class="btn-del" onclick="deleteStudent('${s.code}')">Нест</button></td>
-          </tr>`).join('');
+      if (!fullName) {
+        showBanner("Ному насаби хонандаро нависед.");
         return;
       }
-      window.fbMethods.onValue(window.fbMethods.ref(window.fbDb, 'students'), snap => {
-        tb.innerHTML = '';
-        snap.forEach(c => {
-          const s = c.val();
-          tb.innerHTML += `<tr>
-            <td>${s.schoolId}<br><small style="color:var(--muted)">${s.displayClass || ''}</small></td>
-            <td>${s.rawCode || s.code}</td>
-            <td>${s.name}</td>
-            <td><button class="btn-del" onclick="deleteStudent('${s.code}')">Нест</button></td>
-          </tr>`;
+
+      const keyPartSchool = safeKey(school, "school");
+      const keyPartCode = safeKey(rawCode || `${fullName}_${Date.now()}`, `st_${Date.now()}`);
+      const studentKey = `${keyPartSchool}_${keyPartCode}`;
+
+      try {
+        await db.ref(`students/${studentKey}`).set({
+          id: studentKey,
+          fullName,
+          school,
+          className,
+          studentCode: rawCode || keyPartCode,
+          addedBy: currentProfile.fullName || currentUser.email,
+          createdAt: Date.now()
         });
-      });
-    }
 
-    async function fetchTeacherStudents(teacherClass) {
-      const sel = document.getElementById('tch-student-select');
-      const tb = document.getElementById('tch-students-table');
-      sel.innerHTML = '';
-      tb.innerHTML = '';
-
-      let list = [];
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        list = Object.values(db.students).filter(s => s.className === teacherClass);
-      } else {
-        const snap = await window.fbMethods.get(window.fbMethods.ref(window.fbDb, 'students'));
-        snap.forEach(c => { if (c.val().className === teacherClass) list.push(c.val()); });
-      }
-
-      list.forEach(s => {
-        sel.innerHTML += `<option value="${s.code}">${s.name} (${s.rawCode || s.code})</option>`;
-        tb.innerHTML += `<tr>
-          <td>${s.rawCode || s.code}</td>
-          <td>${s.name}</td>
-          <td><button class="btn-del" onclick="deleteStudent('${s.code}')">Нест</button></td>
-        </tr>`;
-      });
-
-      if (list.length > 0) {
-        sel.value = list[0].code;
-        onTeacherSelectStudentChange();
-      } else {
-        selectedStudentCode = null;
-        document.getElementById('tch-chat-box').innerHTML = '<div style="color:var(--muted);padding:8px;">Аввал хонанда илова кунед.</div>';
+        document.getElementById("addStudentForm").reset();
+        showBanner("Хонанда бомуваффақият илова шуд!", true);
+      } catch (err) {
+        showBanner("Хато ҳангоми сабти хонанда: " + (err.message || err));
       }
     }
 
-    function onTeacherSelectStudentChange() {
-      const code = document.getElementById('tch-student-select').value;
-      if (!code) return;
-      selectedStudentCode = code;
-      listenChat(code, 'tch-chat-box');
-    }
-
-    async function teacherSubmitGrade(e) {
+    // =========================================================================
+    // 6. БАҲО (1-10) ВА ДАВОМОТ
+    // =========================================================================
+    async function handleSaveGrade(e) {
       e.preventDefault();
-      const code = document.getElementById('tch-student-select').value;
-      if (!code) {
-        alert('Аввал хонанда интихоб кунед!');
+      hideBanner();
+
+      const studentKey = document.getElementById("grStudentSelect").value;
+      const subject = document.getElementById("grSubject").value.trim();
+      const score = Number(document.getElementById("grScore").value);
+      const attendance = document.getElementById("grAttendance").value;
+
+      if (!studentKey) {
+        showBanner("Аввал хонандаро интихоб кунед.");
         return;
       }
-      const entry = {
-        date: new Date().toLocaleDateString('tg-TJ'),
-        subject: document.getElementById('tch-subject').value,
-        grade: document.getElementById('tch-grade').value,
-        status: document.getElementById('tch-status').value,
-        comment: document.getElementById('tch-comment').value.trim() || '—'
-      };
-
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        if (!db.grades[code]) db.grades[code] = [];
-        db.grades[code].push(entry);
-        saveLocalDB(db);
-      } else {
-        const r = window.fbMethods.push(window.fbMethods.ref(window.fbDb, 'grades/' + code));
-        await window.fbMethods.set(r, entry);
-      }
-
-      document.getElementById('tch-comment').value = '';
-      alert('Баҳо сабт шуд!');
-    }
-
-    function renderGrades(arr, tb) {
-      tb.innerHTML = '';
-      let sum = 0, cnt = 0;
-      arr.forEach(g => {
-        const n = parseInt(g.grade);
-        if (!isNaN(n)) { sum += n; cnt++; }
-        const gClass = n >= 7 ? 'g-high' : 'g-low';
-        const stClass = g.status === 'Ҳозир' ? 'status-present' : 'status-absent';
-        tb.innerHTML += `<tr>
-          <td>${g.date}</td>
-          <td>${g.subject}</td>
-          <td><span class="grade-pill ${gClass}">${g.grade}</span></td>
-          <td><span class="${stClass}">${g.status}</span></td>
-          <td>${g.comment}</td>
-        </tr>`;
-      });
-      document.getElementById('parent-gpa-display').textContent = `Миёна: ${cnt > 0 ? (sum / cnt).toFixed(1) : '0.0'}`;
-    }
-
-    function fetchParentGrades(code) {
-      if (!code) return;
-      const tb = document.getElementById('prn-grades-table');
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        renderGrades(db.grades[code] || [], tb);
+      if (Number.isNaN(score) || score < 1 || score > 10) {
+        showBanner("Баҳо бояд аз 1 то 10 бошад.");
         return;
       }
-      window.fbMethods.onValue(window.fbMethods.ref(window.fbDb, 'grades/' + code), snap => {
-        const arr = [];
-        snap.forEach(c => arr.push(c.val()));
-        renderGrades(arr, tb);
-      });
-    }
 
-    async function postSchoolAnnouncement(e) {
-      e.preventDefault();
-      const item = {
-        author: activeUser.name,
-        text: document.getElementById('adm-announcement-text').value.trim(),
-        date: new Date().toLocaleDateString('tg-TJ')
-      };
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        db.announcements.push(item);
-        saveLocalDB(db);
-      } else {
-        const r = window.fbMethods.push(window.fbMethods.ref(window.fbDb, 'announcements'));
-        await window.fbMethods.set(r, item);
-      }
-      document.getElementById('adm-announcement-text').value = '';
-      alert('Эълон нашр шуд!');
-    }
+      const st = studentsCache[studentKey] || {};
+      const safeKeyId = safeKey(studentKey, "student");
 
-    function fetchAnnouncements() {
-      const box = document.getElementById('announcements-box');
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        box.innerHTML = (db.announcements || []).slice().reverse().map(a => `
-          <div class="announcement-box">
-            <div style="font-weight:700;color:#ff6b63;font-size:0.8rem;">${a.author} (${a.date})</div>
-            <div style="margin-top:3px;font-size:0.88rem;">${a.text}</div>
-          </div>`).join('') || '<div style="color:var(--muted);">Эълоне нест.</div>';
-        return;
-      }
-      window.fbMethods.onValue(window.fbMethods.ref(window.fbDb, 'announcements'), snap => {
-        box.innerHTML = '';
-        snap.forEach(c => {
-          const a = c.val();
-          box.innerHTML = `<div class="announcement-box">
-            <div style="font-weight:700;color:#ff6b63;font-size:0.8rem;">${a.author} (${a.date})</div>
-            <div style="margin-top:3px;font-size:0.88rem;">${a.text}</div>
-          </div>` + box.innerHTML;
+      try {
+        await db.ref(`grades/${safeKeyId}`).push({
+          studentKey: safeKeyId,
+          studentName: st.fullName || safeKeyId,
+          subject,
+          score,
+          attendance,
+          teacherName: currentProfile.fullName || currentUser.email,
+          createdAt: Date.now()
         });
-      });
+
+        document.getElementById("gradeForm").reset();
+        showBanner("Баҳо ва давомот сабт шуд!", true);
+      } catch (err) {
+        showBanner("Хато ҳангоми сабти баҳо: " + (err.message || err));
+      }
     }
 
-    async function sendChatMessage(role) {
-      const inp = document.getElementById(role === 'teacher' ? 'tch-chat-input' : 'prn-chat-input');
-      const text = inp.value.trim();
+    // =========================================================================
+    // 7. ЭЪЛОНҲО ВА ЧАТ
+    // =========================================================================
+    async function handleAddAnnouncement(e) {
+      e.preventDefault();
+      hideBanner();
+
+      const title = document.getElementById("annTitle").value.trim();
+      const body = document.getElementById("annBody").value.trim();
+
+      try {
+        await db.ref("announcements").push({
+          title,
+          body,
+          author: currentProfile.fullName || currentUser.email,
+          role: currentProfile.role || "user",
+          createdAt: Date.now()
+        });
+        document.getElementById("announcementForm").reset();
+        showBanner("Эълон нашр шуд!", true);
+      } catch (err) {
+        showBanner("Хато ҳангоми нашри эълон: " + (err.message || err));
+      }
+    }
+
+    async function handleSendMessage(e) {
+      e.preventDefault();
+      hideBanner();
+
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
       if (!text) return;
 
-      const code = role === 'teacher' ? selectedStudentCode : activeUser.studentCode;
-      if (!code) {
-        alert('Коди хонанда ёфт нашуд!');
-        return;
+      try {
+        await db.ref("chat").push({
+          sender: currentProfile.fullName || currentUser.email,
+          role: currentProfile.role || "user",
+          text,
+          createdAt: Date.now()
+        });
+        input.value = "";
+      } catch (err) {
+        showBanner("Хато ҳангоми фиристодани паём: " + (err.message || err));
       }
-
-      const msg = { sender: activeUser.name, text, time: Date.now() };
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        if (!db.chats[code]) db.chats[code] = [];
-        db.chats[code].push(msg);
-        saveLocalDB(db);
-        listenChat(code, role === 'teacher' ? 'tch-chat-box' : 'prn-chat-box');
-      } else {
-        const r = window.fbMethods.push(window.fbMethods.ref(window.fbDb, 'private_chats/' + code));
-        await window.fbMethods.set(r, msg);
-      }
-      inp.value = '';
     }
 
-    function renderChat(msgs, box) {
-      box.innerHTML = msgs.map(m => {
-        const mine = m.sender === activeUser.name;
-        return `<div class="msg ${mine ? 'me' : 'other'}">
-          <div class="msg-sender">${m.sender}</div>
-          <div>${m.text}</div>
-        </div>`;
-      }).join('');
-      box.scrollTop = box.scrollHeight;
-    }
+    // =========================================================================
+    // 8. ГИРИФТАНИ МАЪЛУМОТ ДАР РЕЖИМИ ВОҚЕӢ (REALTIME)
+    // =========================================================================
+    let listenersStarted = false;
 
-    function listenChat(code, boxId) {
-      if (!code) return;
-      const box = document.getElementById(boxId);
-      if (window.isDemoFirebase) {
-        const db = getLocalDB();
-        renderChat(db.chats[code] || [], box);
-        return;
-      }
-      if (currentChatRef) window.fbMethods.off(currentChatRef);
-      currentChatRef = window.fbMethods.ref(window.fbDb, 'private_chats/' + code);
-      window.fbMethods.onValue(currentChatRef, snap => {
-        const arr = [];
-        snap.forEach(c => arr.push(c.val()));
-        renderChat(arr, box);
+    function startRealtimeListeners() {
+      if (listenersStarted) return;
+      listenersStarted = true;
+
+      db.ref("students").on("value", (snap) => {
+        studentsCache = snap.val() || {};
+        renderStudents(studentsCache);
+        renderStudentSelect(studentsCache);
+      });
+
+      db.ref("grades").on("value", (snap) => {
+        renderGrades(snap.val() || {});
+      });
+
+      db.ref("announcements").on("value", (snap) => {
+        renderAnnouncements(snap.val() || {});
+      });
+
+      db.ref("chat").limitToLast(60).on("value", (snap) => {
+        renderChat(snap.val() || {});
       });
     }
 
-    function signOutUser() {
-      if (window.isDemoFirebase) {
-        localStorage.removeItem('edaftar_session_v2');
-        activeUser = null;
-        resetAuth();
-      } else {
-        window.fbMethods.signOut(window.fbAuth);
+    function renderStudents(data) {
+      const container = document.getElementById("studentsList");
+      const list = Object.values(data);
+      if (!list.length) {
+        container.innerHTML = `<p class="muted">Ҳоло хонанда сабт нашудааст.</p>`;
+        return;
       }
+
+      container.innerHTML = list.reverse().map((st) => `
+        <div class="item">
+          <div class="item-top">
+            <strong>${escapeHtml(st.fullName)}</strong>
+            <span class="badge">${escapeHtml(st.className || "Синф")}</span>
+          </div>
+          <div class="muted">Мактаб: ${escapeHtml(st.school || "—")} | Рамз: ${escapeHtml(st.studentCode || "—")}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderStudentSelect(data) {
+      const select = document.getElementById("grStudentSelect");
+      const entries = Object.entries(data);
+      if (!entries.length) {
+        select.innerHTML = `<option value="">Аввал хонанда илова кунед</option>`;
+        return;
+      }
+      select.innerHTML = entries.map(([key, st]) =>
+        `<option value="${escapeHtml(key)}">${escapeHtml(st.fullName)} (${escapeHtml(st.className || "")})</option>`
+      ).join("");
+    }
+
+    function renderGrades(data) {
+      const container = document.getElementById("gradesList");
+      const rows = [];
+
+      Object.values(data).forEach((studentGrades) => {
+        if (studentGrades && typeof studentGrades === "object") {
+          Object.values(studentGrades).forEach((item) => rows.push(item));
+        }
+      });
+
+      rows.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      if (!rows.length) {
+        container.innerHTML = `<p class="muted">Ҳоло баҳо ё давомот сабт нашудааст.</p>`;
+        return;
+      }
+
+      container.innerHTML = rows.map((r) => {
+        const isAbsent = r.attendance === "Ғоиб";
+        return `
+          <div class="item">
+            <div class="item-top">
+              <strong>${escapeHtml(r.studentName)} — ${escapeHtml(r.subject)}</strong>
+              <span class="badge ${isAbsent ? "red" : ""}">Баҳо: ${escapeHtml(r.score)}/10 • ${escapeHtml(r.attendance)}</span>
+            </div>
+            <div class="muted">Муаллим: ${escapeHtml(r.teacherName || "—")}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAnnouncements(data) {
+      const container = document.getElementById("announcementsList");
+      const list = Object.values(data).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      if (!list.length) {
+        container.innerHTML = `<p class="muted">Ҳоло эълон нест.</p>`;
+        return;
+      }
+
+      container.innerHTML = list.map((a) => `
+        <div class="item">
+          <div class="item-top">
+            <strong>${escapeHtml(a.title)}</strong>
+            <span class="badge">${escapeHtml(a.role || "info")}</span>
+          </div>
+          <p style="margin:6px 0;">${escapeHtml(a.body)}</p>
+          <div class="muted">Муаллиф: ${escapeHtml(a.author || "—")}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderChat(data) {
+      const box = document.getElementById("chatBox");
+      const list = Object.values(data).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      if (!list.length) {
+        box.innerHTML = `<p class="muted">Ҳоло паём нест. Аввалин паёмро нависед!</p>`;
+        return;
+      }
+
+      box.innerHTML = list.map((m) => `
+        <div class="msg">
+          <div class="item-top">
+            <strong>${escapeHtml(m.sender)}</strong>
+            <span class="muted">${escapeHtml(m.role || "")}</span>
+          </div>
+          <div>${escapeHtml(m.text)}</div>
+        </div>
+      `).join("");
+
+      box.scrollTop = box.scrollHeight;
     }
   </script>
 </body>
