@@ -301,7 +301,7 @@
           <div id="regChildCodeField" class="field">
             <label for="childCodeInput">Рамз / ID талаба (барои волидайн/хонанда)</label>
             <input id="childCodeInput" type="text" placeholder="Масалан: ST-2010" />
-            <p class="muted" style="margin-top:4px;">Волидайн танҳо баҳои талабаро бо ин рамз мебинанд.</p>
+            <p class="muted" style="margin-top:4px;">Волидайн танҳо баҳо ва эълони синфи талабаи худро бо ин рамз мебинанд.</p>
           </div>
 
           <div class="field">
@@ -369,7 +369,7 @@
       <div id="parentBindPanel" class="card hidden">
         <h3>Ҳимоя ва пайвастшавӣ ба талаба (Волидайн / Хонанда)</h3>
         <p class="muted" style="margin-bottom:10px;">
-          Барои дидани баҳо ва давомоти танҳо талабаи худ, рамзи хонандаро (ки муаллим додааст, масалан <code>ST-2010</code>) ворид ва ҳифз кунед.
+          Барои дидани баҳо ва эълонҳои танҳо синфи талабаи худ, рамзи хонандаро (масалан <code>ST-2010</code>) ворид ва ҳифз кунед.
         </p>
         <form onsubmit="handleBindStudentCode(event)" style="display:flex; gap:8px; flex-wrap:wrap;">
           <input id="bindCodeInput" type="text" required placeholder="Рамз / ID талаба (масалан: ST-2010)" style="flex:1; min-width:220px;" />
@@ -422,7 +422,7 @@
 
               <div class="field">
                 <label for="stClass">Синф</label>
-                <input id="stClass" type="text" placeholder="Масалан: 9-А" />
+                <input id="stClass" type="text" required placeholder="Масалан: 9-А" />
               </div>
 
               <div class="field">
@@ -503,22 +503,47 @@
         <div id="gradesList"></div>
       </div>
 
-      <!-- 3. ЭЪЛОНҲО -->
+      <!-- 3. ЭЪЛОНҲО (ТАНҲО БАРОИ СИНФИ ХУД БАРОИ ВОЛИДАЙН) -->
       <div id="sec-announcements" class="card hidden">
-        <h2>Эълонҳои расмӣ</h2>
+        <div class="item-top" style="margin-bottom:12px;">
+          <h2 id="announcementsTitle" style="margin:0;">Эълонҳои синфӣ</h2>
+          <span id="announcementsClassBadge" class="badge">Синф</span>
+        </div>
 
         <div id="announcementPanel" class="item hidden" style="margin-bottom:14px;">
-          <h3>Навиштани эълони нав</h3>
+          <h3>Навиштани эълони нав барои синф</h3>
           <form id="announcementForm" onsubmit="handleAddAnnouncement(event)">
+            <div class="grid-2">
+              <div class="field">
+                <label for="annClassSelect">Синфи ҳадаф</label>
+                <select id="annClassSelect" required onchange="toggleCustomInput('annClassSelect', 'annCustomClassField', 'annClassCustom')">
+                  <option value="5-А">5-А</option>
+                  <option value="6-А">6-А</option>
+                  <option value="7-А">7-А</option>
+                  <option value="8-А">8-А</option>
+                  <option value="9-А" selected>9-А</option>
+                  <option value="9-Б">9-Б</option>
+                  <option value="10-А">10-А</option>
+                  <option value="11-А">11-А</option>
+                  <option value="__custom__">Синфи дигар (дастӣ нависед)</option>
+                </select>
+              </div>
+
+              <div id="annCustomClassField" class="field hidden">
+                <label for="annClassCustom">Номи синфи дигар</label>
+                <input id="annClassCustom" type="text" placeholder="Масалан: 8-Б" />
+              </div>
+            </div>
+
             <div class="field">
               <label for="annTitle">Сарлавҳа</label>
               <input id="annTitle" type="text" required placeholder="Сарлавҳаи эълон" />
             </div>
             <div class="field">
               <label for="annBody">Матни эълон</label>
-              <textarea id="annBody" rows="3" required placeholder="Матни муфассал..."></textarea>
+              <textarea id="annBody" rows="3" required placeholder="Матни муфассал барои падару модарони ҳамин синф..."></textarea>
             </div>
-            <button type="submit" class="btn-green">Интишори эълон</button>
+            <button type="submit" class="btn-green">Интишори эълон ба синф</button>
           </form>
         </div>
 
@@ -538,17 +563,15 @@
   </div>
 
   <script>
-  
-const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -563,6 +586,10 @@ const firebaseConfig = {
     }
 
     function normalizeCode(raw) {
+      return String(raw ?? "").trim().toUpperCase();
+    }
+
+    function normalizeClass(raw) {
       return String(raw ?? "").trim().toUpperCase();
     }
 
@@ -613,6 +640,7 @@ const firebaseConfig = {
     let currentProfile = { fullName: "Корбар", role: "student", school: "", boundStudentCode: "" };
     let studentsCache = {};
     let gradesCache = {};
+    let announcementsCache = {};
 
     function canManageSchool() {
       const role = currentProfile.role || "student";
@@ -623,6 +651,23 @@ const firebaseConfig = {
       return normalizeCode(currentProfile.boundStudentCode || "");
     }
 
+    function getBoundStudentRecord() {
+      const code = getBoundStudentCode();
+      if (!code) return null;
+      return Object.values(studentsCache || {}).find(
+        (st) => normalizeCode(st.studentCode) === code
+      ) || null;
+    }
+
+    function getParentAllowedClass() {
+      if (canManageSchool()) return "";
+      const boundStudent = getBoundStudentRecord();
+      if (boundStudent && boundStudent.className) {
+        return normalizeClass(boundStudent.className);
+      }
+      return "";
+    }
+
     function isStudentAllowedForCurrentUser(studentKey, st = {}) {
       if (canManageSchool()) return true;
       const boundCode = getBoundStudentCode();
@@ -631,6 +676,14 @@ const firebaseConfig = {
       const stCode = normalizeCode(st.studentCode || "");
       const stKeyNorm = normalizeCode(studentKey);
       return stCode === boundCode || stKeyNorm === boundCode;
+    }
+
+    function isAnnouncementAllowedForCurrentUser(ann = {}) {
+      if (canManageSchool()) return true;
+      const allowedClass = getParentAllowedClass();
+      if (!allowedClass) return false;
+      const annClass = normalizeClass(ann.className || "");
+      return annClass !== "" && annClass === allowedClass;
     }
 
     function switchAuthMode(mode) {
@@ -715,7 +768,8 @@ const firebaseConfig = {
         updateParentPrivacyUi();
         renderStudents(studentsCache);
         renderGrades(gradesCache);
-        showBanner(`Рамзи талаба (${code}) тасдиқ шуд. Танҳо маълумоти ҳамон талаба намоиш дода мешавад.`, true);
+        renderAnnouncements(announcementsCache);
+        showBanner(`Рамзи талаба (${code}) тасдиқ шуд. Танҳо баҳо ва эълонҳои синфи ҳамон талаба намоиш дода мешаванд.`, true);
       } catch (err) {
         showBanner("Хато ҳангоми ҳифзи рамз: " + (err.message || err));
       }
@@ -738,15 +792,22 @@ const firebaseConfig = {
       const bindInput = document.getElementById("bindCodeInput");
       if (bindInput && code) bindInput.value = code;
 
-      const matched = Object.values(studentsCache).find(
-        (st) => normalizeCode(st.studentCode) === code
-      );
+      const matched = getBoundStudentRecord();
+      const allowedClass = getParentAllowedClass();
+
+      document.getElementById("announcementsTitle").textContent = isParentOrStudent
+        ? (allowedClass ? `Эълонҳои синфи ${allowedClass}` : "Эълонҳои синфӣ")
+        : "Эълонҳои синфӣ";
+
+      document.getElementById("announcementsClassBadge").textContent = isParentOrStudent
+        ? (allowedClass || "Синф муайян нест")
+        : "Ҳамаи синфҳо (Муаллим/Админ)";
 
       document.getElementById("boundStudentInfo").textContent = code
         ? (matched
-            ? `Пайвастшуда: ${matched.fullName} (${matched.className || "Синф"}) • Рамз: ${code}`
+            ? `Пайвастшуда: ${matched.fullName} • Синф: ${matched.className || "—"} • Рамз: ${code}`
             : `Рамзи фаъол: ${code} (агар талаба ҳоло дар рӯйхат нест, ба муаллим хабар диҳед)`)
-        : "Огоҳӣ: Рамзи талаба ҳанӯз ворид нашудааст — баҳои дигар хонандагон баста аст.";
+        : "Огоҳӣ: Рамзи талаба ҳанӯз ворид нашудааст — баҳои дигар хонандагон ва эълонҳои синфҳо баста аст.";
     }
 
     async function handleLogout() {
@@ -816,7 +877,7 @@ const firebaseConfig = {
         "stSchoolCustom",
         currentProfile.school || "Мактаб"
       );
-      const className = document.getElementById("stClass").value.trim() || "Синф";
+      const className = document.getElementById("stClass").value.trim() || "9-А";
       const rawCode = normalizeCode(document.getElementById("stCode").value);
       const finalCode = rawCode || `ST-${Date.now().toString().slice(-5)}`;
 
@@ -842,11 +903,10 @@ const firebaseConfig = {
         });
 
         document.getElementById("stName").value = "";
-        document.getElementById("stClass").value = "";
         document.getElementById("stCode").value = "";
         document.getElementById("stName").focus();
 
-        showBanner(`Хонанда "${fullName}" (Рамз: ${finalCode}) илова шуд!`, true);
+        showBanner(`Хонанда "${fullName}" (Синф: ${className}, Рамз: ${finalCode}) илова шуд!`, true);
       } catch (err) {
         showBanner("Хато ҳангоми сабти хонанда: " + (err.message || err));
       }
@@ -937,21 +997,42 @@ const firebaseConfig = {
         return;
       }
 
+      const targetClass = resolveSelectOrCustom("annClassSelect", "annClassCustom", "");
       const title = document.getElementById("annTitle").value.trim();
       const body = document.getElementById("annBody").value.trim();
 
+      if (!targetClass) {
+        showBanner("Лутфан синфро интихоб ё нависед.");
+        return;
+      }
+
       try {
         await db.ref("announcements").push({
+          className: targetClass,
           title,
           body,
           author: currentProfile.fullName || currentUser.email,
           role: currentProfile.role || "user",
           createdAt: Date.now()
         });
-        document.getElementById("announcementForm").reset();
-        showBanner("Эълон нашр шуд!", true);
+        document.getElementById("annTitle").value = "";
+        document.getElementById("annBody").value = "";
+        if (document.getElementById("annClassSelect").value === "__custom__") {
+          document.getElementById("annClassCustom").value = "";
+        }
+        showBanner(`Эълон барои синфи ${targetClass} нашр шуд!`, true);
       } catch (err) {
         showBanner("Хато ҳангоми нашри эълон: " + (err.message || err));
+      }
+    }
+
+    async function handleDeleteAnnouncement(annId) {
+      if (!canManageSchool()) return;
+      try {
+        await db.ref(`announcements/${safeKey(annId)}`).remove();
+        showBanner("Эълон пок карда шуд.", true);
+      } catch (err) {
+        showBanner("Хато ҳангоми пок кардани эълон: " + (err.message || err));
       }
     }
 
@@ -988,6 +1069,7 @@ const firebaseConfig = {
         renderStudents(studentsCache);
         renderStudentSelect(studentsCache);
         renderGrades(gradesCache);
+        renderAnnouncements(announcementsCache);
       });
 
       db.ref("grades").on("value", (snap) => {
@@ -996,7 +1078,8 @@ const firebaseConfig = {
       });
 
       db.ref("announcements").on("value", (snap) => {
-        renderAnnouncements(snap.val() || {});
+        announcementsCache = snap.val() || {};
+        renderAnnouncements(announcementsCache);
       });
 
       db.ref("chat").limitToLast(60).on("value", (snap) => {
@@ -1103,17 +1186,28 @@ const firebaseConfig = {
 
     function renderAnnouncements(data) {
       const container = document.getElementById("announcementsList");
-      const list = Object.values(data || {}).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      if (!list.length) {
-        container.innerHTML = `<p class="muted">Ҳоло эълон нест.</p>`;
+      const canManage = canManageSchool();
+
+      const rows = Object.entries(data || {})
+        .map(([annId, item]) => ({ ...item, annId }))
+        .filter((item) => isAnnouncementAllowedForCurrentUser(item))
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      if (!rows.length) {
+        container.innerHTML = canManage
+          ? `<p class="muted">Ҳоло эълон нест.</p>`
+          : `<p class="muted">Барои синфи талабаи шумо ҳоло эълон нест ё рамзи хонанда ворид нашудааст.</p>`;
         return;
       }
 
-      container.innerHTML = list.map((a) => `
+      container.innerHTML = rows.map((a) => `
         <div class="item">
           <div class="item-top">
             <strong>${escapeHtml(a.title)}</strong>
-            <span class="badge">${escapeHtml(a.role || "info")}</span>
+            <div class="item-actions">
+              <span class="badge">Синф: ${escapeHtml(a.className || "—")}</span>
+              ${canManage ? `<button type="button" class="btn-red btn-sm" onclick="handleDeleteAnnouncement('${escapeHtml(a.annId)}')">Пок кардан</button>` : ""}
+            </div>
           </div>
           <p style="margin:6px 0;">${escapeHtml(a.body)}</p>
           <div class="muted">Муаллиф: ${escapeHtml(a.author || "—")}</div>
