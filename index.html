@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>e-Дафтар Pro Max</title>
 
-  <!-- Firebase Compat SDK v10 -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -156,8 +155,8 @@
       cursor: pointer;
       border: none;
       border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 0.92rem;
+      padding: 9px 14px;
+      font-size: 0.9rem;
       font-weight: 600;
       transition: 0.15s ease;
     }
@@ -179,6 +178,12 @@
 
     .btn-red:hover {
       background: var(--red-bright);
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 8px;
     }
 
     .btn-outline {
@@ -206,7 +211,15 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
       margin-bottom: 4px;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .muted {
@@ -257,7 +270,7 @@
   <div class="container">
     <div id="globalAlert" class="status-banner hidden"></div>
 
-    <!-- САҲИФАИ ВОРИДШАВӢ ВА РЕГИСТРАТСИЯ -->
+    <!-- ВОРИДШАВӢ ВА РЕГИСТРАТСИЯ -->
     <div id="authSection" class="card" style="max-width: 480px; margin: 24px auto;">
       <div style="text-align:center; margin-bottom:14px;">
         <h1 style="color:var(--green-bright); font-size:1.6rem;">e-Дафтар Pro Max</h1>
@@ -327,10 +340,13 @@
 
       <!-- 1. ХОНАНДАГОН -->
       <div id="sec-students" class="card">
-        <h2>Рӯйхати хонандагон</h2>
+        <div class="item-top" style="margin-bottom:12px;">
+          <h2 style="margin:0;">Рӯйхати хонандагон</h2>
+          <span id="studentsCountBadge" class="badge">0 хонанда</span>
+        </div>
 
         <div id="addStudentPanel" class="item hidden" style="margin-bottom:14px;">
-          <h3>Илова кардани хонандаи нав</h3>
+          <h3>Илова кардани хонандаи нав (бе маҳдудият)</h3>
           <form id="addStudentForm" onsubmit="handleAddStudent(event)">
             <div class="grid-2">
               <div class="field">
@@ -346,7 +362,7 @@
                 <input id="stClass" type="text" placeholder="Масалан: 9-А" />
               </div>
               <div class="field">
-                <label for="stCode">Рамз / ID хонанда</label>
+                <label for="stCode">Рамз / ID хонанда (ихтиёрӣ)</label>
                 <input id="stCode" type="text" placeholder="Масалан: ST-2010" />
               </div>
             </div>
@@ -428,27 +444,20 @@
   </div>
 
   <script>
-    // =========================================================================
-    // 1. КОНФИГУРАТСИЯИ FIREBASE (Ба ҷои арзишҳои зерин config-и худро гузоред)
-    // =========================================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // =========================================================================
-    // 2. ФУНКСИЯИ БЕХАТАРИ ТОЗАКУНИИ КАЛИДҲОИ FIREBASE
-    // Firebase дар path/key аломатҳои . $ # [ ] / -ро қабул намекунад
-    // =========================================================================
     function safeKey(raw, fallback = "item") {
       const val = String(raw ?? "")
         .trim()
@@ -476,13 +485,15 @@ const firebaseConfig = {
       document.getElementById("globalAlert").classList.add("hidden");
     }
 
-    // =========================================================================
-    // 3. ВОРИДШАВӢ ВА РЕГИСТРАТСИЯ
-    // =========================================================================
     let authMode = "login";
     let currentUser = null;
     let currentProfile = { fullName: "Корбар", role: "student", school: "" };
     let studentsCache = {};
+
+    function canManageSchool() {
+      const role = currentProfile.role || "student";
+      return role === "teacher" || role === "admin";
+    }
 
     function switchAuthMode(mode) {
       authMode = mode;
@@ -503,11 +514,11 @@ const firebaseConfig = {
 
       try {
         if (authMode === "register") {
-          const fullName = document.getElementById("fullNameInput").value.trim() || "Корбари нав";
+          const fullName = document.getElementById("fullNameInput").value.trim();
           const role = document.getElementById("roleInput").value;
           const school = document.getElementById("schoolInput").value.trim();
 
-          if (!document.getElementById("fullNameInput").value.trim()) {
+          if (!fullName) {
             showBanner("Лутфан ному насаби пурраро ворид кунед.");
             return;
           }
@@ -554,21 +565,11 @@ const firebaseConfig = {
 
       try {
         const snap = await db.ref(`users/${uid}`).get();
-        if (snap.exists()) {
-          currentProfile = snap.val();
-        } else {
-          currentProfile = {
-            fullName: user.email || "Корбар",
-            role: "student",
-            school: ""
-          };
-        }
+        currentProfile = snap.exists()
+          ? snap.val()
+          : { fullName: user.email || "Корбар", role: "student", school: "" };
       } catch (_) {
-        currentProfile = {
-          fullName: user.email || "Корбар",
-          role: "student",
-          school: ""
-        };
+        currentProfile = { fullName: user.email || "Корбар", role: "student", school: "" };
       }
 
       document.getElementById("authSection").classList.add("hidden");
@@ -582,7 +583,7 @@ const firebaseConfig = {
       badge.textContent = role.toUpperCase();
       badge.className = role === "admin" ? "badge red" : "badge";
 
-      const canManage = role === "teacher" || role === "admin";
+      const canManage = canManageSchool();
       document.getElementById("addStudentPanel").classList.toggle("hidden", !canManage);
       document.getElementById("gradeFormPanel").classList.toggle("hidden", !canManage);
       document.getElementById("announcementPanel").classList.toggle("hidden", !canManage);
@@ -590,9 +591,6 @@ const firebaseConfig = {
       startRealtimeListeners();
     });
 
-    // =========================================================================
-    // 4. НАВИГАТСИЯИ БАХШҲО
-    // =========================================================================
     function switchSection(secName, btnEl) {
       for (const name of ["students", "grades", "announcements", "chat"]) {
         document.getElementById(`sec-${name}`).classList.toggle("hidden", name !== secName);
@@ -601,12 +599,15 @@ const firebaseConfig = {
       if (btnEl) btnEl.classList.add("active");
     }
 
-    // =========================================================================
-    // 5. ИЛОВА КАРДАНИ ХОНАНДА (БО SAFE KEY — БЕ ХАТОИ НУҚТА/АЛОМАТҲО)
-    // =========================================================================
+    // Илова кардани хонанда бе маҳдудият ва бе хатои роҳ
     async function handleAddStudent(e) {
       e.preventDefault();
       hideBanner();
+
+      if (!canManageSchool()) {
+        showBanner("Танҳо муаллим ё админ метавонад хонанда илова кунад.");
+        return;
+      }
 
       const fullName = document.getElementById("stName").value.trim();
       const school = document.getElementById("stSchool").value.trim() || currentProfile.school || "Мактаб";
@@ -618,9 +619,10 @@ const firebaseConfig = {
         return;
       }
 
+      const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       const keyPartSchool = safeKey(school, "school");
-      const keyPartCode = safeKey(rawCode || `${fullName}_${Date.now()}`, `st_${Date.now()}`);
-      const studentKey = `${keyPartSchool}_${keyPartCode}`;
+      const keyPartCode = safeKey(rawCode || fullName, "st");
+      const studentKey = safeKey(`${keyPartSchool}_${keyPartCode}_${uniqueSuffix}`, `st_${uniqueSuffix}`);
 
       try {
         await db.ref(`students/${studentKey}`).set({
@@ -628,24 +630,41 @@ const firebaseConfig = {
           fullName,
           school,
           className,
-          studentCode: rawCode || keyPartCode,
+          studentCode: rawCode || `ST-${Date.now().toString().slice(-5)}`,
           addedBy: currentProfile.fullName || currentUser.email,
           createdAt: Date.now()
         });
 
-        document.getElementById("addStudentForm").reset();
-        showBanner("Хонанда бомуваффақият илова шуд!", true);
+        document.getElementById("stName").value = "";
+        document.getElementById("stClass").value = "";
+        document.getElementById("stCode").value = "";
+        document.getElementById("stName").focus();
+
+        showBanner(`Хонанда "${fullName}" илова шуд! Метавонед боз илова кунед.`, true);
       } catch (err) {
         showBanner("Хато ҳангоми сабти хонанда: " + (err.message || err));
       }
     }
 
-    // =========================================================================
-    // 6. БАҲО (1-10) ВА ДАВОМОТ
-    // =========================================================================
+    async function handleDeleteStudent(studentKey) {
+      if (!canManageSchool()) return;
+      if (!confirm("Ин хонандаро пок кардан мехоҳед?")) return;
+      try {
+        await db.ref(`students/${safeKey(studentKey)}`).remove();
+        showBanner("Хонанда пок карда шуд.", true);
+      } catch (err) {
+        showBanner("Хато ҳангоми пок кардан: " + (err.message || err));
+      }
+    }
+
     async function handleSaveGrade(e) {
       e.preventDefault();
       hideBanner();
+
+      if (!canManageSchool()) {
+        showBanner("Танҳо муаллим ё админ метавонад баҳо гузорад.");
+        return;
+      }
 
       const studentKey = document.getElementById("grStudentSelect").value;
       const subject = document.getElementById("grSubject").value.trim();
@@ -675,16 +694,28 @@ const firebaseConfig = {
           createdAt: Date.now()
         });
 
-        document.getElementById("gradeForm").reset();
+        document.getElementById("grSubject").value = "";
+        document.getElementById("grScore").value = "";
         showBanner("Баҳо ва давомот сабт шуд!", true);
       } catch (err) {
         showBanner("Хато ҳангоми сабти баҳо: " + (err.message || err));
       }
     }
 
-    // =========================================================================
-    // 7. ЭЪЛОНҲО ВА ЧАТ
-    // =========================================================================
+    // Пок кардани баҳо аз Firebase
+    async function handleDeleteGrade(studentKey, gradeId) {
+      if (!canManageSchool()) {
+        showBanner("Танҳо муаллим ё админ метавонад баҳоро пок кунад.");
+        return;
+      }
+      try {
+        await db.ref(`grades/${safeKey(studentKey)}/${safeKey(gradeId)}`).remove();
+        showBanner("Баҳо пок карда шуд!", true);
+      } catch (err) {
+        showBanner("Хато ҳангоми пок кардани баҳо: " + (err.message || err));
+      }
+    }
+
     async function handleAddAnnouncement(e) {
       e.preventDefault();
       hideBanner();
@@ -728,9 +759,6 @@ const firebaseConfig = {
       }
     }
 
-    // =========================================================================
-    // 8. ГИРИФТАНИ МАЪЛУМОТ ДАР РЕЖИМИ ВОҚЕӢ (REALTIME)
-    // =========================================================================
     let listenersStarted = false;
 
     function startRealtimeListeners() {
@@ -758,17 +786,23 @@ const firebaseConfig = {
 
     function renderStudents(data) {
       const container = document.getElementById("studentsList");
-      const list = Object.values(data);
-      if (!list.length) {
+      const entries = Object.entries(data);
+      document.getElementById("studentsCountBadge").textContent = `${entries.length} хонанда`;
+
+      if (!entries.length) {
         container.innerHTML = `<p class="muted">Ҳоло хонанда сабт нашудааст.</p>`;
         return;
       }
 
-      container.innerHTML = list.reverse().map((st) => `
+      const canManage = canManageSchool();
+      container.innerHTML = entries.reverse().map(([key, st]) => `
         <div class="item">
           <div class="item-top">
             <strong>${escapeHtml(st.fullName)}</strong>
-            <span class="badge">${escapeHtml(st.className || "Синф")}</span>
+            <div class="item-actions">
+              <span class="badge">${escapeHtml(st.className || "Синф")}</span>
+              ${canManage ? `<button type="button" class="btn-red btn-sm" onclick="handleDeleteStudent('${escapeHtml(key)}')">Пок кардан</button>` : ""}
+            </div>
           </div>
           <div class="muted">Мактаб: ${escapeHtml(st.school || "—")} | Рамз: ${escapeHtml(st.studentCode || "—")}</div>
         </div>
@@ -791,9 +825,15 @@ const firebaseConfig = {
       const container = document.getElementById("gradesList");
       const rows = [];
 
-      Object.values(data).forEach((studentGrades) => {
+      Object.entries(data).forEach(([studentKey, studentGrades]) => {
         if (studentGrades && typeof studentGrades === "object") {
-          Object.values(studentGrades).forEach((item) => rows.push(item));
+          Object.entries(studentGrades).forEach(([gradeId, item]) => {
+            rows.push({
+              ...item,
+              studentKey: item.studentKey || studentKey,
+              gradeId
+            });
+          });
         }
       });
 
@@ -804,13 +844,17 @@ const firebaseConfig = {
         return;
       }
 
+      const canManage = canManageSchool();
       container.innerHTML = rows.map((r) => {
         const isAbsent = r.attendance === "Ғоиб";
         return `
           <div class="item">
             <div class="item-top">
               <strong>${escapeHtml(r.studentName)} — ${escapeHtml(r.subject)}</strong>
-              <span class="badge ${isAbsent ? "red" : ""}">Баҳо: ${escapeHtml(r.score)}/10 • ${escapeHtml(r.attendance)}</span>
+              <div class="item-actions">
+                <span class="badge ${isAbsent ? "red" : ""}">Баҳо: ${escapeHtml(r.score)}/10 • ${escapeHtml(r.attendance)}</span>
+                ${canManage ? `<button type="button" class="btn-red btn-sm" onclick="handleDeleteGrade('${escapeHtml(r.studentKey)}', '${escapeHtml(r.gradeId)}')">Пок кардан</button>` : ""}
+              </div>
             </div>
             <div class="muted">Муаллим: ${escapeHtml(r.teacherName || "—")}</div>
           </div>
