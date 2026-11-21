@@ -151,13 +151,6 @@
       border-color: var(--green-bright);
     }
 
-    input[readonly] {
-      background: #0d1511;
-      color: var(--green-bright);
-      font-weight: 600;
-      border-color: rgba(34, 197, 94, 0.35);
-    }
-
     button {
       cursor: pointer;
       border: none;
@@ -303,11 +296,6 @@
               <option value="teacher">Муаллим (Teacher)</option>
               <option value="admin">Админ (Admin)</option>
             </select>
-          </div>
-
-          <div id="regTeacherClassField" class="field hidden">
-            <label for="regTeacherClassInput">Синфи муаллим (автоматикӣ дар эълон истифода мешавад)</label>
-            <input id="regTeacherClassInput" type="text" placeholder="Масалан: 9-А" />
           </div>
 
           <div id="regChildCodeField" class="field">
@@ -517,69 +505,33 @@
         <div id="gradesList"></div>
       </div>
 
-      <!-- 3. ЭЪЛОНҲО (МАКТАБ ВА СИНФИ МУАЛЛИМ АВТОМАТИКӢ) -->
+      <!-- 3. ЭЪЛОНҲО -->
       <div id="sec-announcements" class="card hidden">
         <div class="item-top" style="margin-bottom:12px;">
           <h2 id="announcementsTitle" style="margin:0;">Эълонҳои синфӣ</h2>
-          <span id="announcementsClassBadge" class="badge">Синф</span>
+          <span id="announcementsClassBadge" class="badge">Эълонҳо</span>
         </div>
 
         <div id="announcementPanel" class="item hidden" style="margin-bottom:14px;">
-          <h3>Навиштани эълон (мактаб ва синф худкор гузошта мешаванд)</h3>
-
-          <!-- Барои муаллим: мактаб ва синфи худаш худкор ва қатъӣ мебарояд -->
-          <div id="teacherAutoScopeBox" class="hidden" style="margin-bottom:12px;">
-            <div class="grid-2">
-              <div class="field" style="margin-bottom:0;">
-                <label for="autoTeacherSchool">Мактаби шумо (автоматикӣ)</label>
-                <input id="autoTeacherSchool" type="text" readonly />
-              </div>
-              <div class="field" style="margin-bottom:0;">
-                <label for="autoTeacherClass">Синфи шумо (автоматикӣ)</label>
-                <input id="autoTeacherClass" type="text" readonly />
-              </div>
-            </div>
-
-            <div id="teacherInitialScopeSetup" class="hidden" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
-              <input id="teacherSetSchoolInput" type="text" placeholder="Мактаб (масалан: Гимназия №5)" style="flex:1; min-width:200px;" />
-              <input id="teacherSetClassInput" type="text" placeholder="Синф (масалан: 9-А)" style="flex:1; min-width:150px;" />
-              <button type="button" class="btn-green btn-sm" onclick="handleSaveTeacherOwnScope()">Сабт кардан</button>
-            </div>
-          </div>
-
+          <h3>Навиштани эълон (номи мактаб ва синфро ворид кунед)</h3>
           <form id="announcementForm" onsubmit="handleAddAnnouncement(event)">
-            <div id="adminAnnouncementScopeBox" class="grid-2 hidden">
+            <div class="grid-2">
               <div class="field">
-                <label for="annClassSelect">Синф</label>
-                <select id="annClassSelect" onchange="toggleCustomInput('annClassSelect', 'annCustomClassField', 'annClassCustom')">
-                  <option value="5-А">5-А</option>
-                  <option value="6-А">6-А</option>
-                  <option value="7-А">7-А</option>
-                  <option value="8-А">8-А</option>
-                  <option value="9-А" selected>9-А</option>
-                  <option value="9-Б">9-Б</option>
-                  <option value="10-А">10-А</option>
-                  <option value="11-А">11-А</option>
-                  <option value="__custom__">Синфи дигар</option>
-                </select>
-              </div>
-              <div id="annCustomClassField" class="field hidden">
-                <label for="annClassCustom">Синфи дигар</label>
-                <input id="annClassCustom" type="text" placeholder="Масалан: 8-Б" />
+                <label for="annSchoolInput">Номи мактаб / муассиса</label>
+                <input id="annSchoolInput" type="text" required placeholder="Масалан: Гимназия №5" />
               </div>
               <div class="field">
-                <label for="annSchoolInput">Мактаб</label>
-                <input id="annSchoolInput" type="text" placeholder="Номи мактаб" />
+                <label for="annClassInput">Синф</label>
+                <input id="annClassInput" type="text" required placeholder="Масалан: 9-А" />
               </div>
             </div>
-
             <div class="field">
               <label for="annTitle">Сарлавҳа</label>
               <input id="annTitle" type="text" required placeholder="Сарлавҳаи эълон" />
             </div>
             <div class="field">
               <label for="annBody">Матни эълон</label>
-              <textarea id="annBody" rows="3" required placeholder="Матни эълон барои мактаб ва синфи худ..."></textarea>
+              <textarea id="annBody" rows="3" required placeholder="Матни эълон..."></textarea>
             </div>
             <button type="submit" class="btn-green">Интишори эълон</button>
           </form>
@@ -601,17 +553,15 @@
   </div>
 
   <script>
- 
-const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -669,7 +619,6 @@ const firebaseConfig = {
     function toggleRegisterRoleFields() {
       const role = document.getElementById("roleInput").value;
       document.getElementById("regChildCodeField").classList.toggle("hidden", role !== "student");
-      document.getElementById("regTeacherClassField").classList.toggle("hidden", role !== "teacher");
     }
 
     function resolveSelectOrCustom(selectId, customInputId, fallback = "") {
@@ -686,7 +635,6 @@ const firebaseConfig = {
       fullName: "Корбар",
       role: "student",
       school: "",
-      teacherClass: "",
       boundStudentCode: ""
     };
     let studentsCache = {};
@@ -703,26 +651,6 @@ const firebaseConfig = {
 
     function canManageSchool() {
       return isTeacher() || isAdmin();
-    }
-
-    function getTeacherOwnClass() {
-      return normalizeClass(currentProfile.teacherClass || "");
-    }
-
-    function getTeacherOwnSchool() {
-      const directSchool = String(currentProfile.school || "").trim();
-      if (directSchool) return directSchool;
-
-      // Агар дар профили муаллим мактаб набошад, аз хонандаи синфи худ ё аввалин хонанда гирифта мешавад
-      const ownClass = getTeacherOwnClass();
-      const allStudents = Object.values(studentsCache || {});
-      if (ownClass) {
-        const matchByClass = allStudents.find(
-          (st) => normalizeClass(st.className || "") === ownClass && String(st.school || "").trim()
-        );
-        if (matchByClass) return String(matchByClass.school).trim();
-      }
-      return "";
     }
 
     function getBoundStudentCode() {
@@ -764,95 +692,17 @@ const firebaseConfig = {
     }
 
     function isAnnouncementAllowedForCurrentUser(ann = {}) {
-      if (isAdmin()) return true;
+      if (canManageSchool()) return true;
 
       const annClass = normalizeClass(ann.className || "");
       const annSchool = normalizeSchool(ann.school || "");
-
-      if (isTeacher()) {
-        const ownClass = getTeacherOwnClass();
-        const ownSchool = normalizeSchool(getTeacherOwnSchool());
-        if (!ownClass) return false;
-        const classMatch = annClass === ownClass;
-        const schoolMatch = !ownSchool || !annSchool || annSchool === ownSchool;
-        return classMatch && schoolMatch;
-      }
-
       const parentClass = getParentAllowedClass();
       const parentSchool = getParentAllowedSchool();
+
       if (!parentClass) return false;
       const classMatch = annClass === parentClass;
       const schoolMatch = !parentSchool || !annSchool || annSchool === parentSchool;
       return classMatch && schoolMatch;
-    }
-
-    function syncAnnouncementScopeUI() {
-      const autoBox = document.getElementById("teacherAutoScopeBox");
-      const initialSetup = document.getElementById("teacherInitialScopeSetup");
-      const adminBox = document.getElementById("adminAnnouncementScopeBox");
-      const autoSchool = document.getElementById("autoTeacherSchool");
-      const autoClass = document.getElementById("autoTeacherClass");
-      const setSchoolInput = document.getElementById("teacherSetSchoolInput");
-      const setClassInput = document.getElementById("teacherSetClassInput");
-      const annSchoolInput = document.getElementById("annSchoolInput");
-
-      if (isTeacher()) {
-        autoBox.classList.remove("hidden");
-        adminBox.classList.add("hidden");
-
-        const tClass = getTeacherOwnClass();
-        const tSchool = getTeacherOwnSchool();
-
-        autoSchool.value = tSchool || "Мактаб сабт нашудааст";
-        autoClass.value = tClass || "Синф сабт нашудааст";
-
-        if (setSchoolInput && tSchool && !setSchoolInput.value) {
-          setSchoolInput.value = tSchool;
-        }
-        if (setClassInput && tClass && !setClassInput.value) {
-          setClassInput.value = tClass;
-        }
-
-        initialSetup.classList.toggle("hidden", Boolean(tClass && tSchool));
-      } else if (isAdmin()) {
-        autoBox.classList.add("hidden");
-        adminBox.classList.remove("hidden");
-        if (annSchoolInput && !annSchoolInput.value) {
-          annSchoolInput.value = getTeacherOwnSchool() || "Гимназия №5";
-        }
-      } else {
-        autoBox.classList.add("hidden");
-        adminBox.classList.add("hidden");
-      }
-    }
-
-    async function handleSaveTeacherOwnScope() {
-      hideBanner();
-      if (!isTeacher() || !currentUser) return;
-
-      const newSchool = String(document.getElementById("teacherSetSchoolInput").value || getTeacherOwnSchool()).trim();
-      const newClass = normalizeClass(document.getElementById("teacherSetClassInput").value || getTeacherOwnClass());
-
-      if (!newSchool || !newClass) {
-        showBanner("Лутфан ҳам мактаб (масалан: Гимназия №5) ва ҳам синфи худро (масалан: 9-А) ворид кунед.");
-        return;
-      }
-
-      const uid = safeKey(currentUser.uid, "user");
-      try {
-        await db.ref(`users/${uid}`).update({
-          school: newSchool,
-          teacherClass: newClass
-        });
-        currentProfile.school = newSchool;
-        currentProfile.teacherClass = newClass;
-        syncAnnouncementScopeUI();
-        updateParentPrivacyUi();
-        renderAnnouncements(announcementsCache);
-        showBanner(`Мактаби "${newSchool}" ва синфи "${newClass}" худкор сабт шуданд.`, true);
-      } catch (err) {
-        showBanner("Хато ҳангоми сабт: " + (err.message || err));
-      }
     }
 
     function switchAuthMode(mode) {
@@ -877,12 +727,9 @@ const firebaseConfig = {
         if (authMode === "register") {
           const fullName = document.getElementById("fullNameInput").value.trim();
           const role = document.getElementById("roleInput").value;
-          const school = resolveSelectOrCustom("schoolSelect", "schoolCustomInput", "Гимназия №5");
+          const school = resolveSelectOrCustom("schoolSelect", "schoolCustomInput", "Мактаб");
           const boundStudentCode = role === "student"
             ? normalizeCode(document.getElementById("childCodeInput").value)
-            : "";
-          const teacherClass = role === "teacher"
-            ? normalizeClass(document.getElementById("regTeacherClassInput").value)
             : "";
 
           if (!fullName) {
@@ -895,11 +742,6 @@ const firebaseConfig = {
             return;
           }
 
-          if (role === "teacher" && !teacherClass) {
-            showBanner("Барои муаллим ворид кардани синфи худ (масалан: 9-А) ҳатмист.");
-            return;
-          }
-
           const cred = await auth.createUserWithEmailAndPassword(email, password);
           const uid = safeKey(cred.user.uid, "user");
 
@@ -908,7 +750,6 @@ const firebaseConfig = {
             fullName,
             role,
             school,
-            teacherClass,
             boundStudentCode,
             email,
             createdAt: Date.now()
@@ -973,18 +814,9 @@ const firebaseConfig = {
       const matched = getBoundStudentRecord();
       const allowedClass = getParentAllowedClass();
 
-      if (isTeacher()) {
-        const tClass = getTeacherOwnClass();
-        const tSchool = getTeacherOwnSchool();
-        document.getElementById("announcementsTitle").textContent = tClass
-          ? `Эълонҳои синфи ${tClass}`
-          : "Эълонҳои синфии муаллим";
-        document.getElementById("announcementsClassBadge").textContent = tClass
-          ? `${tSchool ? tSchool + " • " : ""}${tClass}`
-          : "Синф ворид нашудааст";
-      } else if (isAdmin()) {
+      if (canManageSchool()) {
         document.getElementById("announcementsTitle").textContent = "Эълонҳои мактабҳо ва синфҳо";
-        document.getElementById("announcementsClassBadge").textContent = "ADMIN";
+        document.getElementById("announcementsClassBadge").textContent = isAdmin() ? "ADMIN" : "МУАЛЛИМ";
       } else {
         document.getElementById("announcementsTitle").textContent = allowedClass
           ? `Эълонҳои синфи ${allowedClass}`
@@ -1018,9 +850,9 @@ const firebaseConfig = {
         const snap = await db.ref(`users/${uid}`).get();
         currentProfile = snap.exists()
           ? snap.val()
-          : { fullName: user.email || "Корбар", role: "student", school: "", teacherClass: "", boundStudentCode: "" };
+          : { fullName: user.email || "Корбар", role: "student", school: "", boundStudentCode: "" };
       } catch (_) {
-        currentProfile = { fullName: user.email || "Корбар", role: "student", school: "", teacherClass: "", boundStudentCode: "" };
+        currentProfile = { fullName: user.email || "Корбар", role: "student", school: "", boundStudentCode: "" };
       }
 
       document.getElementById("authSection").classList.add("hidden");
@@ -1039,7 +871,6 @@ const firebaseConfig = {
       document.getElementById("gradeFormPanel").classList.toggle("hidden", !canManage);
       document.getElementById("announcementPanel").classList.toggle("hidden", !canManage);
 
-      syncAnnouncementScopeUI();
       updateParentPrivacyUi();
       startRealtimeListeners();
     });
@@ -1050,11 +881,6 @@ const firebaseConfig = {
       }
       document.querySelectorAll(".nav-tabs button").forEach((b) => b.classList.remove("active"));
       if (btnEl) btnEl.classList.add("active");
-
-      if (secName === "announcements") {
-        syncAnnouncementScopeUI();
-        updateParentPrivacyUi();
-      }
     }
 
     async function handleAddStudent(e) {
@@ -1070,7 +896,7 @@ const firebaseConfig = {
       const school = resolveSelectOrCustom(
         "stSchoolSelect",
         "stSchoolCustom",
-        currentProfile.school || "Гимназия №5"
+        currentProfile.school || "Мактаб"
       );
       const className = normalizeClass(document.getElementById("stClass").value || "9-А");
       const rawCode = normalizeCode(document.getElementById("stCode").value);
@@ -1192,29 +1018,24 @@ const firebaseConfig = {
         return;
       }
 
-      let targetClass = "";
-      let targetSchool = "";
-
-      if (isTeacher()) {
-        targetClass = getTeacherOwnClass();
-        targetSchool = getTeacherOwnSchool();
-
-        if (!targetClass || !targetSchool) {
-          showBanner("Аввал мактаб ва синфи худро сабт кунед, то худкор гузошта шаванд.");
-          return;
-        }
-      } else {
-        targetClass = normalizeClass(resolveSelectOrCustom("annClassSelect", "annClassCustom", ""));
-        targetSchool = (document.getElementById("annSchoolInput").value || getTeacherOwnSchool() || "Гимназия №5").trim();
-      }
-
+      const school = document.getElementById("annSchoolInput").value.trim();
+      const className = normalizeClass(document.getElementById("annClassInput").value);
       const title = document.getElementById("annTitle").value.trim();
       const body = document.getElementById("annBody").value.trim();
 
+      if (!school) {
+        showBanner("Лутфан номи мактабро ворид кунед.");
+        return;
+      }
+      if (!className) {
+        showBanner("Лутфан синфро ворид кунед.");
+        return;
+      }
+
       try {
         await db.ref("announcements").push({
-          className: targetClass,
-          school: targetSchool,
+          school,
+          className,
           title,
           body,
           author: currentProfile.fullName || currentUser.email,
@@ -1225,30 +1046,15 @@ const firebaseConfig = {
 
         document.getElementById("annTitle").value = "";
         document.getElementById("annBody").value = "";
-        if (document.getElementById("annClassSelect")?.value === "__custom__") {
-          document.getElementById("annClassCustom").value = "";
-        }
 
-        showBanner(`Эълон барои мактаби "${targetSchool}" ва синфи "${targetClass}" нашр шуд!`, true);
+        showBanner(`Эълон барои мактаби "${school}" ва синфи "${className}" нашр шуд!`, true);
       } catch (err) {
         showBanner("Хато ҳангоми нашри эълон: " + (err.message || err));
       }
     }
 
-    async function handleDeleteAnnouncement(annId, ann = {}) {
+    async function handleDeleteAnnouncement(annId) {
       if (!canManageSchool()) return;
-
-      if (isTeacher()) {
-        const sameClass = normalizeClass(ann.className || "") === getTeacherOwnClass();
-        const sameSchool = !normalizeSchool(getTeacherOwnSchool()) ||
-          !normalizeSchool(ann.school || "") ||
-          normalizeSchool(ann.school || "") === normalizeSchool(getTeacherOwnSchool());
-        if (!sameClass || !sameSchool) {
-          showBanner("Шумо танҳо эълони синф ва мактаби худро пок карда метавонед.");
-          return;
-        }
-      }
-
       try {
         await db.ref(`announcements/${safeKey(annId)}`).remove();
         showBanner("Эълон пок карда шуд.", true);
@@ -1286,7 +1092,6 @@ const firebaseConfig = {
 
       db.ref("students").on("value", (snap) => {
         studentsCache = snap.val() || {};
-        syncAnnouncementScopeUI();
         updateParentPrivacyUi();
         renderStudents(studentsCache);
         renderStudentSelect(studentsCache);
@@ -1416,11 +1221,9 @@ const firebaseConfig = {
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
       if (!rows.length) {
-        container.innerHTML = isTeacher() && (!getTeacherOwnClass() || !getTeacherOwnSchool())
-          ? `<p class="muted">Аввал мактаб ва синфи худро дар боло сабт кунед, то эълонҳои синфатон намоиш дода шаванд.</p>`
-          : (canManage
-              ? `<p class="muted">Ҳоло эълон нест.</p>`
-              : `<p class="muted">Барои синф ва мактаби талабаи шумо ҳоло эълон нест ё рамзи хонанда ворид нашудааст.</p>`);
+        container.innerHTML = canManage
+          ? `<p class="muted">Ҳоло эълон нест.</p>`
+          : `<p class="muted">Барои синф ва мактаби талабаи шумо ҳоло эълон нест ё рамзи хонанда ворид нашудааст.</p>`;
         return;
       }
 
@@ -1430,7 +1233,7 @@ const firebaseConfig = {
             <strong>${escapeHtml(a.title)}</strong>
             <div class="item-actions">
               <span class="badge">Синф: ${escapeHtml(a.className || "—")}</span>
-              ${canManage ? `<button type="button" class="btn-red btn-sm" onclick="handleDeleteAnnouncement('${escapeHtml(a.annId)}', ${JSON.stringify({ className: a.className || "", school: a.school || "" }).replace(/"/g, "&quot;")})">Пок кардан</button>` : ""}
+              ${canManage ? `<button type="button" class="btn-red btn-sm" onclick="handleDeleteAnnouncement('${escapeHtml(a.annId)}')">Пок кардан</button>` : ""}
             </div>
           </div>
           <p style="margin:6px 0;">${escapeHtml(a.body)}</p>
