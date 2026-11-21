@@ -385,14 +385,44 @@
                 <label for="grStudentSelect">Хонанда</label>
                 <select id="grStudentSelect" required></select>
               </div>
+
               <div class="field">
-                <label for="grSubject">Фан</label>
-                <input id="grSubject" type="text" required placeholder="Масалан: Математика" />
+                <label for="grSubjectSelect">Фан (Тоҷикистон)</label>
+                <select id="grSubjectSelect" required onchange="toggleCustomSubjectInput()">
+                  <option value="Забони тоҷикӣ">Забони тоҷикӣ</option>
+                  <option value="Адабиёти тоҷик">Адабиёти тоҷик</option>
+                  <option value="Забони русӣ">Забони русӣ</option>
+                  <option value="Адабиёти рус">Адабиёти рус</option>
+                  <option value="Забони англисӣ">Забони англисӣ</option>
+                  <option value="Математика">Математика</option>
+                  <option value="Алгебра">Алгебра</option>
+                  <option value="Геометрия">Геометрия</option>
+                  <option value="Информатика">Информатика</option>
+                  <option value="Физика">Физика</option>
+                  <option value="Химия">Химия</option>
+                  <option value="Биология">Биология</option>
+                  <option value="География">География</option>
+                  <option value="Таърихи халқи тоҷик">Таърихи халқи тоҷик</option>
+                  <option value="Таърихи умумӣ">Таърихи умумӣ</option>
+                  <option value="Ҳуқуқи инсон / Асосҳои давлат ва ҳуқуқ">Ҳуқуқи инсон / Асосҳои давлат ва ҳуқуқ</option>
+                  <option value="Технологияи иттилоотӣ / Меҳнат">Технологияи иттилоотӣ / Меҳнат</option>
+                  <option value="Тарбияи ҷисмонӣ">Тарбияи ҷисмонӣ</option>
+                  <option value="Санъати тасвирӣ / Нақшакашӣ">Санъати тасвирӣ / Нақшакашӣ</option>
+                  <option value="Мусиқӣ / Фарҳанг">Мусиқӣ / Фарҳанг</option>
+                  <option value="__custom__">Фанни дигар (дастӣ)</option>
+                </select>
               </div>
+
+              <div id="customSubjectField" class="field hidden">
+                <label for="grSubjectCustom">Номи фанни дигар</label>
+                <input id="grSubjectCustom" type="text" placeholder="Номи фанро нависед..." />
+              </div>
+
               <div class="field">
                 <label for="grScore">Баҳо (аз 1 то 10)</label>
                 <input id="grScore" type="number" min="1" max="10" required placeholder="1 - 10" />
               </div>
+
               <div class="field">
                 <label for="grAttendance">Давомот</label>
                 <select id="grAttendance">
@@ -444,16 +474,15 @@
   </div>
 
   <script>
-   const firebaseConfig = {
-  apiKey: "AIzaSyBzXu7p_6zQwmdH1KpxVTgj6_O3RMzSMcw",
-  authDomain: "edaftar-pro-max.firebaseapp.com",
-  databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
-  projectId: "edaftar-pro-max",
-  storageBucket: "edaftar-pro-max.firebasestorage.app",
-  messagingSenderId: "647994267390",
-  appId: "1:647994267390:web:ce8431a4cf77c5c3ceb7af",
-  measurementId: "G-C4JSV52YEY"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "edaftar-pro-max.firebaseapp.com",
+      databaseURL: "https://edaftar-pro-max-default-rtdb.firebaseio.com",
+      projectId: "edaftar-pro-max",
+      storageBucket: "edaftar-pro-max.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -484,6 +513,16 @@
 
     function hideBanner() {
       document.getElementById("globalAlert").classList.add("hidden");
+    }
+
+    function toggleCustomSubjectInput() {
+      const sel = document.getElementById("grSubjectSelect");
+      const customField = document.getElementById("customSubjectField");
+      const customInput = document.getElementById("grSubjectCustom");
+      const isCustom = sel.value === "__custom__";
+      customField.classList.toggle("hidden", !isCustom);
+      customInput.required = isCustom;
+      if (!isCustom) customInput.value = "";
     }
 
     let authMode = "login";
@@ -600,7 +639,6 @@
       if (btnEl) btnEl.classList.add("active");
     }
 
-    // Илова кардани хонанда бе маҳдудият ва бе хатои роҳ
     async function handleAddStudent(e) {
       e.preventDefault();
       hideBanner();
@@ -668,12 +706,19 @@
       }
 
       const studentKey = document.getElementById("grStudentSelect").value;
-      const subject = document.getElementById("grSubject").value.trim();
+      const selectedSubject = document.getElementById("grSubjectSelect").value;
+      const subject = selectedSubject === "__custom__"
+        ? document.getElementById("grSubjectCustom").value.trim()
+        : selectedSubject;
       const score = Number(document.getElementById("grScore").value);
       const attendance = document.getElementById("grAttendance").value;
 
       if (!studentKey) {
         showBanner("Аввал хонандаро интихоб кунед.");
+        return;
+      }
+      if (!subject) {
+        showBanner("Лутфан фанро интихоб ё нависед.");
         return;
       }
       if (Number.isNaN(score) || score < 1 || score > 10) {
@@ -695,15 +740,16 @@
           createdAt: Date.now()
         });
 
-        document.getElementById("grSubject").value = "";
         document.getElementById("grScore").value = "";
+        if (selectedSubject === "__custom__") {
+          document.getElementById("grSubjectCustom").value = "";
+        }
         showBanner("Баҳо ва давомот сабт шуд!", true);
       } catch (err) {
         showBanner("Хато ҳангоми сабти баҳо: " + (err.message || err));
       }
     }
 
-    // Пок кардани баҳо аз Firebase
     async function handleDeleteGrade(studentKey, gradeId) {
       if (!canManageSchool()) {
         showBanner("Танҳо муаллим ё админ метавонад баҳоро пок кунад.");
